@@ -1,0 +1,1289 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Life Alchemy - Simulador de Vida</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#5D5CDE',
+                        secondary: '#8B5CF6',
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .stat-bar {
+            transition: width 0.5s ease-in-out;
+        }
+        .element-card {
+            transition: all 0.3s ease;
+        }
+        .element-card:hover {
+            transform: translateY(-2px);
+        }
+        .combination-glow {
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 20px rgba(93, 92, 222, 0.5);
+        }
+        @keyframes fadeInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .fade-in-up {
+            animation: fadeInUp 0.5s ease-out;
+        }
+    </style>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-200 min-h-screen">
+    <div class="container mx-auto px-4 py-6 max-w-6xl">
+        <!-- Identity Selection Screen -->
+        <div id="identitySelection" class="text-center">
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg max-w-2xl mx-auto">
+                <h1 class="text-4xl font-bold text-primary mb-4">🧬 Life Alchemy</h1>
+                <p class="text-gray-600 dark:text-gray-400 mb-8">Tu aventura está a punto de comenzar...</p>
+                
+                <h2 class="text-2xl font-semibold mb-6">¿Cómo quieres vivir tu vida?</h2>
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+                    <button onclick="selectIdentity('niño')" class="identity-option bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 p-6 rounded-lg transition-colors border-2 border-transparent hover:border-blue-500">
+                        <div class="text-4xl mb-3">👦</div>
+                        <div class="text-xl font-semibold text-blue-800 dark:text-blue-200">Niño</div>
+                        <div class="text-sm text-blue-600 dark:text-blue-300 mt-2">Experimenta la vida desde una perspectiva masculina</div>
+                    </button>
+                    
+                    <button onclick="selectIdentity('niña')" class="identity-option bg-pink-100 dark:bg-pink-900 hover:bg-pink-200 dark:hover:bg-pink-800 p-6 rounded-lg transition-colors border-2 border-transparent hover:border-pink-500">
+                        <div class="text-4xl mb-3">👧</div>
+                        <div class="text-xl font-semibold text-pink-800 dark:text-pink-200">Niña</div>
+                        <div class="text-sm text-pink-600 dark:text-pink-300 mt-2">Experimenta la vida desde una perspectiva femenina</div>
+                    </button>
+                    
+                    <button onclick="selectIdentity('queer')" class="identity-option bg-purple-100 dark:bg-purple-900 hover:bg-purple-200 dark:hover:bg-purple-800 p-6 rounded-lg transition-colors border-2 border-transparent hover:border-purple-500">
+                        <div class="text-4xl mb-3">🌈</div>
+                        <div class="text-xl font-semibold text-purple-800 dark:text-purple-200">Queer</div>
+                        <div class="text-sm text-purple-600 dark:text-purple-300 mt-2">Explora tu identidad de manera fluida y auténtica</div>
+                    </button>
+                </div>
+                
+                <p class="text-sm text-gray-500 dark:text-gray-400">Tu elección influirá en las experiencias y oportunidades que encuentres en tu viaje</p>
+            </div>
+        </div>
+
+        <!-- Game Content (initially hidden) -->
+        <div id="gameContent" class="hidden">
+            <!-- Header -->
+            <div class="text-center mb-6">
+                <h1 class="text-4xl font-bold text-primary mb-2">🧬 Life Alchemy</h1>
+                <p class="text-gray-600 dark:text-gray-400">Vive tu vida, combina experiencias, desbloquea tu potencial</p>
+                <div class="text-sm text-gray-500 dark:text-gray-500 mt-2">
+                    Jugando como: <span id="selectedIdentity" class="font-semibold"></span>
+                </div>
+            </div>
+
+        <!-- Game Stats -->
+        <div class="bg-white dark:bg-gray-800 rounded-lg p-6 mb-6 shadow-lg">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Edad</div>
+                    <div class="text-2xl font-bold" id="age">5</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Etapa</div>
+                    <div class="text-lg font-semibold" id="stage">Infancia</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Elementos</div>
+                    <div class="text-2xl font-bold text-primary" id="elementCount">3</div>
+                </div>
+                <div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400">Puntos</div>
+                    <div class="text-2xl font-bold text-green-600" id="score">0</div>
+                </div>
+            </div>
+            
+            <!-- Stats Bars -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>💪 Físico</span>
+                        <span id="physicalValue">50</span>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-red-500 h-3 rounded-full stat-bar" style="width: 50%" id="physicalBar"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>🧠 Mental</span>
+                        <span id="mentalValue">50</span>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-blue-500 h-3 rounded-full stat-bar" style="width: 50%" id="mentalBar"></div>
+                    </div>
+                </div>
+                <div>
+                    <div class="flex justify-between text-sm mb-1">
+                        <span>❤️ Social</span>
+                        <span id="socialValue">50</span>
+                    </div>
+                    <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-3">
+                        <div class="bg-green-500 h-3 rounded-full stat-bar" style="width: 50%" id="socialBar"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Story/Events Panel -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">📖 Tu Historia</h2>
+                <div id="storyContent" class="mb-4 min-h-40 max-h-60 overflow-y-auto">
+                    <div class="fade-in-up">
+                        <p class="mb-4">Eres un niño de 5 años lleno de curiosidad. El mundo es grande y misterioso, y cada día traes nuevas experiencias.</p>
+                        <p class="text-primary font-semibold">¿Qué quieres hacer hoy?</p>
+                    </div>
+                </div>
+                
+                <div id="choices" class="space-y-2">
+                    <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="makeChoice('curious')">
+                        🔍 Explorar el jardín y hacer preguntas
+                    </button>
+                    <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="makeChoice('active')">
+                        🏃 Correr y jugar con energía
+                    </button>
+                    <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="makeChoice('social')">
+                        👥 Intentar hacer amigos en el parque
+                    </button>
+                </div>
+            </div>
+
+            <!-- Elements & Combinations Panel -->
+            <div class="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-lg">
+                <h2 class="text-2xl font-bold mb-4">🧪 Laboratorio de Vida</h2>
+                <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Arrastra elementos para combinarlos y descubrir nuevos aspectos de tu personalidad</p>
+                
+                <!-- Combination Area -->
+                <div class="bg-gray-50 dark:bg-gray-700 rounded-lg p-4 mb-4 min-h-20 border-2 border-dashed border-gray-300 dark:border-gray-600" id="combinationArea">
+                    <div class="text-center text-gray-500 dark:text-gray-400" id="combinationPrompt">
+                        Arrastra dos elementos aquí para combinarlos
+                    </div>
+                </div>
+
+                <!-- Elements Grid -->
+                <div class="grid grid-cols-3 gap-2 mb-4" id="elementsGrid">
+                    <!-- Elements will be populated by JavaScript -->
+                </div>
+
+                <!-- Discovered Elements -->
+                <div class="mt-4">
+                    <h3 class="font-semibold mb-2">📚 Descubrimientos Recientes</h3>
+                    <div id="recentDiscoveries" class="text-sm text-gray-600 dark:text-gray-400">
+                        <p>Combina elementos para desbloquear nuevas oportunidades...</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Progress Bar -->
+        <div class="mt-6 bg-white dark:bg-gray-800 rounded-lg p-4 shadow-lg">
+            <div class="flex justify-between text-sm mb-2">
+                <span>Progreso de Vida</span>
+                <span id="lifeProgress">5%</span>
+            </div>
+            <div class="bg-gray-200 dark:bg-gray-700 rounded-full h-4">
+                <div class="bg-gradient-to-r from-primary to-secondary h-4 rounded-full transition-all duration-1000" style="width: 5%" id="lifeProgressBar"></div>
+            </div>
+        </div>
+        </div>
+    </div>
+
+    <script>
+        // Game State
+        let gameState = {
+            identity: null,
+            age: 5,
+            stage: 'Infancia',
+            stats: { physical: 50, mental: 50, social: 50 },
+            score: 0,
+            elements: ['Curiosidad', 'Energía', 'Inocencia'],
+            discovered: [],
+            combinations: [],
+            selectedElements: []
+        };
+
+        // Element combinations and their effects
+        const combinations = {
+            'Curiosidad+Energía': { result: 'Explorador', stats: { mental: 10, physical: 5 }, description: 'Tu sed de conocimiento y energía te convierten en un explorador nato.' },
+            'Curiosidad+Inocencia': { result: 'Soñador', stats: { mental: 8, social: 5 }, description: 'Tu mente curiosa e inocente crea mundos de fantasía.' },
+            'Energía+Inocencia': { result: 'Juguetón', stats: { physical: 8, social: 8 }, description: 'Tu energía e inocencia te hacen irresistible para otros niños.' },
+            'Explorador+Soñador': { result: 'Aventurero', stats: { mental: 15, physical: 10 }, description: 'Combinas sueños con acción para crear aventuras épicas.' },
+            'Explorador+Juguetón': { result: 'Líder Natural', stats: { social: 15, physical: 5 }, description: 'Tu capacidad de explorar y conectar con otros te convierte en líder.' },
+            'Soñador+Juguetón': { result: 'Artista', stats: { mental: 12, social: 10 }, description: 'Tu imaginación y carisma florecen en expresión artística.' },
+            'Líder Natural+Artista': { result: 'Visionario', stats: { mental: 20, social: 15 }, description: 'Combinas liderazgo y creatividad para inspirar a otros.' },
+            
+            // Resilience combinations
+            'Dolor+Valentía': { result: 'Resiliente', stats: { mental: 15, physical: 5 }, description: 'El dolor te ha enseñado a ser fuerte. Nada puede quebrantarte ahora.' },
+            'Rechazo+Autenticidad': { result: 'Rebelde', stats: { mental: 10, social: -5 }, description: 'El rechazo social te ha enseñado a valorar tu verdadero yo por encima de todo.' },
+            'Vergüenza+Sensibilidad': { result: 'Empático Profundo', stats: { mental: 12, social: 8 }, description: 'Tu propia vergüenza te permite entender el dolor de otros de manera única.' },
+            'Resiliente+Rebelde': { result: 'Activista', stats: { mental: 20, social: 10 }, description: 'Tu resistencia y rebeldía te convierten en una voz de cambio.' },
+            'Resiliente+Empático Profundo': { result: 'Sanador', stats: { mental: 18, social: 15 }, description: 'Tu resistencia y empatía te permiten ayudar a otros a sanar.' },
+            'Rebelde+Empático Profundo': { result: 'Revolucionario', stats: { mental: 25, social: 5 }, description: 'Combinas la rebeldía con la comprensión profunda para cambiar el mundo.' },
+
+            // Professional & Skill combinations
+            'Aventurero+Constructor': { result: 'Ingeniero', stats: { mental: 15, physical: 8 }, description: 'Tu espíritu aventurero y habilidades de construcción te hacen un ingeniero nato.' },
+            'Narradora+Artista': { result: 'Escritora', stats: { mental: 18, social: 10 }, description: 'Combinas narrativa y arte para crear historias cautivadoras.' },
+            'Competitivo+Disciplina': { result: 'Atleta Elite', stats: { physical: 20, mental: 8 }, description: 'Tu naturaleza competitiva y disciplina te llevan a la élite deportiva.' },
+            'Sabiduría+Amistad': { result: 'Consejero', stats: { mental: 15, social: 15 }, description: 'Tu sabiduría combinada con habilidades sociales te hace un consejero natural.' },
+            'Atleta+Disciplina': { result: 'Campeón', stats: { physical: 18, mental: 10 }, description: 'La combinación de talento atlético y disciplina te lleva al campeonato.' },
+            'Académico+Especialista': { result: 'Investigador', stats: { mental: 25, social: -5 }, description: 'Tu educación académica y especialización te convierten en un investigador experto.' },
+            'Emprendedor+Ambicioso': { result: 'CEO', stats: { mental: 20, social: 5 }, description: 'Tu espíritu emprendedor y ambición te llevan a dirigir grandes organizaciones.' },
+            'Viajero+Sociable': { result: 'Diplomático', stats: { mental: 12, social: 20 }, description: 'Tus viajes y habilidades sociales te preparan para la diplomacia internacional.' },
+            'Altruismo+Mentor': { result: 'Filántropo', stats: { mental: 10, social: 20 }, description: 'Tu altruismo y mentoría se expanden para ayudar a comunidades enteras.' },
+            
+            // Creative combinations
+            'Creativo+Naturalista': { result: 'Artista de la Naturaleza', stats: { mental: 15, physical: 8 }, description: 'Tu creatividad inspirada por la naturaleza crea arte único y poderoso.' },
+            'Romántico+Artista': { result: 'Poeta', stats: { mental: 18, social: 12 }, description: 'Tu naturaleza romántica y artística florece en la poesía.' },
+            'Rebeldía+Creativo': { result: 'Artista Revolucionario', stats: { mental: 20, social: 5 }, description: 'Tu rebeldía se expresa a través del arte que desafía el status quo.' },
+            'Filósofe+Reflexivo': { result: 'Sabio Moderno', stats: { mental: 25, social: 8 }, description: 'Tu filosofía y reflexión te convierten en una fuente de sabiduría contemporánea.' },
+            
+            // Social & Leadership combinations  
+            'Líder Natural+Profesional': { result: 'Ejecutivo', stats: { mental: 15, social: 18 }, description: 'Tu liderazgo natural se perfecciona en el mundo profesional.' },
+            'Sociable+Compañero': { result: 'Networker', stats: { social: 22, mental: 8 }, description: 'Tu naturaleza sociable y capacidad de conectar te hace un networker excepcional.' },
+            'Padre/Madre+Sabio': { result: 'Patriarca/Matriarca', stats: { social: 20, mental: 15 }, description: 'Tu experiencia como padre/madre y sabiduría te convierten en el pilar de la familia.' },
+            'Activista Comunitario+Legado': { result: 'Changemaker', stats: { mental: 18, social: 18 }, description: 'Tu activismo comunitario construye un legado de cambio positivo.' },
+            'Maestro+Paz Interior': { result: 'Gurú', stats: { mental: 20, social: 15 }, description: 'Tu sabiduría como maestro y paz interior inspiran a otros en sus caminos espirituales.' },
+            
+            // Wellness & Balance combinations
+            'Saludable+Paz Interior': { result: 'Zen Master', stats: { mental: 18, physical: 15 }, description: 'Tu equilibrio entre salud física y paz mental te da una perspectiva zen de la vida.' },
+            'Inversionista+Ambicioso': { result: 'Magnate', stats: { mental: 18, social: 8 }, description: 'Tu visión financiera y ambición te convierten en un magnate de los negocios.' },
+            'Crisis+Reflexivo': { result: 'Renacido', stats: { mental: 20, social: 5 }, description: 'Tu crisis existencial seguida de reflexión profunda te ha renovado completamente.' },
+            
+            // Identity-based combinations
+            'Autenticidad Feroz+Pionere': { result: 'Líder LGBTQ+', stats: { mental: 18, social: 15 }, description: 'Tu autenticidad y espíritu pionero te convierte en un líder de la comunidad LGBTQ+.' },
+            'Determinación+Hermandad': { result: 'Feminista', stats: { mental: 15, social: 18 }, description: 'Tu determinación y hermandad femenina te hacen una voz fuerte para los derechos de las mujeres.' },
+            'Valentía Emocional+Red de Apoyo': { result: 'Terapeuta', stats: { mental: 20, social: 18 }, description: 'Tu valentía emocional y red de apoyo te preparan para ayudar a otros con sus problemas.' },
+            
+            // Advanced meta-combinations
+            'Visionario+Investigador': { result: 'Innovador', stats: { mental: 30, social: 10 }, description: 'Tu visión y capacidad de investigación te permiten innovar y cambiar paradigmas.' },
+            'Revolucionario+Changemaker': { result: 'Transformador Social', stats: { mental: 25, social: 25 }, description: 'Tu capacidad revolucionaria y de cambio social transforma sociedades enteras.' },
+            'CEO+Filántropo': { result: 'Líder Visionario', stats: { mental: 25, social: 25 }, description: 'Combinas éxito empresarial con impacto social para liderar el cambio global.' },
+            'Zen Master+Gurú': { result: 'Enlightened', stats: { mental: 30, physical: 20, social: 20 }, description: 'Has alcanzado un nivel de iluminación que inspira y transforma a todos a tu alrededor.' },
+
+            // Additional logical combinations
+            'Observación+Sabiduría': { result: 'Científico', stats: { mental: 20, physical: -2 }, description: 'Tu capacidad de observar y tu sabiduría te convierten en un investigador meticuloso.' },
+            'Atletismo+Competitivo': { result: 'Deportista Profesional', stats: { physical: 22, mental: 5 }, description: 'Tu atletismo natural y espíritu competitivo te llevan al deporte profesional.' },
+            'Diversión+Sociable': { result: 'Animador', stats: { social: 18, physical: 8 }, description: 'Tu naturaleza divertida y social te convierte en el alma de cada reunión.' },
+            'Responsabilidad+Disciplina': { result: 'Líder Confiable', stats: { mental: 12, social: 15 }, description: 'Tu sentido del deber y disciplina generan confianza en otros.' },
+            'Talento+Especialista': { result: 'Virtuoso', stats: { mental: 20, social: 10 }, description: 'Tu talento natural refinado por especialización te hace excepcional en tu campo.' },
+            'Autoconocimiento+Reflexivo': { result: 'Psicólogo', stats: { mental: 22, social: 12 }, description: 'Tu autoconocimiento y reflexión te permiten entender la mente humana.' },
+            'Fiestero+Networker': { result: 'Influencer', stats: { social: 25, mental: 5 }, description: 'Tu vida social intensa y habilidades de networking te dan influencia masiva.' },
+            'Saludable+Atleta Elite': { result: 'Entrenador Personal', stats: { physical: 20, social: 15 }, description: 'Tu salud óptima y atletismo elite te permiten entrenar a otros.' },
+            'Abuelo/a+Patriarca/Matriarca': { result: 'Anciano Sabio', stats: { mental: 25, social: 20 }, description: 'Tu experiencia como abuelo y pilar familiar te da sabiduría ancestral.' },
+            'Innovador+Transformador Social': { result: 'Visionario del Futuro', stats: { mental: 35, social: 20 }, description: 'Combinas innovación tecnológica con transformación social para cambiar el mundo.' },
+            
+            // More creative combinations
+            'Naturalista+Viajero': { result: 'Explorador Natural', stats: { mental: 15, physical: 12 }, description: 'Tu amor por la naturaleza y los viajes te convierte en un explorador de ecosistemas.' },
+            'Poeta+Sabio Moderno': { result: 'Escritor Filosófico', stats: { mental: 28, social: 15 }, description: 'Tu poesía y sabiduría moderna crean literatura que toca el alma.' },
+            'Diplomático+Changemaker': { result: 'Pacificador Global', stats: { mental: 20, social: 30 }, description: 'Tu diplomacia y activismo construyen puentes hacia la paz mundial.' },
+            'Investigador+Innovador': { result: 'Premio Nobel', stats: { mental: 40, social: 10 }, description: 'Tu investigación e innovación revolucionan el conocimiento humano.' },
+            'Terapeuta+Sanador': { result: 'Sanador Integral', stats: { mental: 25, social: 25 }, description: 'Combinas terapia psicológica con sanación holística para ayudar integralmente.' },
+            
+            // Professional growth combinations
+            'Profesional+Ejecutivo': { result: 'Director General', stats: { mental: 18, social: 20 }, description: 'Tu experiencia profesional y habilidades ejecutivas te llevan a la alta dirección.' },
+            'Compañero+Padre/Madre': { result: 'Familia Estable', stats: { social: 25, mental: 10 }, description: 'Tu capacidad de ser buen compañero y padre/madre crea una familia sólida.' },
+            'Emprendedor+CEO': { result: 'Fundador Exitoso', stats: { mental: 25, social: 15 }, description: 'Tu espíritu emprendedor y habilidades de CEO construyen un imperio empresarial.' },
+            'Mentor+Maestro': { result: 'Educador Inspirador', stats: { mental: 20, social: 25 }, description: 'Tu mentoría y enseñanza inspiran a generaciones de estudiantes.' },
+            'Inversionista+Magnate': { result: 'Titán Financiero', stats: { mental: 25, social: 8 }, description: 'Tu visión de inversión y ambición te convierten en una fuerza financiera.' },
+            
+            // Healing and growth combinations
+            'Renacido+Paz Interior': { result: 'Maestro Espiritual', stats: { mental: 25, social: 18 }, description: 'Tu renacimiento y paz interior te permiten guiar a otros en su transformación.' },
+            'Red de Apoyo+Comunidad': { result: 'Constructor de Redes', stats: { social: 30, mental: 12 }, description: 'Tu habilidad para crear apoyo y comunidad construye redes sociales poderosas.' },
+            'Autoaceptación+Autoamor': { result: 'Ser Completo', stats: { mental: 20, physical: 10, social: 15 }, description: 'La combinación de autoaceptación y autoamor te da una completitud personal extraordinaria.' },
+            'Consciencia Social+Feminista': { result: 'Activista de Derechos', stats: { mental: 20, social: 25 }, description: 'Tu consciencia social y feminismo te convierten en una voz poderosa por los derechos humanos.' },
+            'Pensamiento Crítico+Sabio Moderno': { result: 'Intelectual Público', stats: { mental: 30, social: 15 }, description: 'Tu pensamiento crítico y sabiduría moderna te posicionan como una voz intelectual influyente.' },
+        };
+
+        // Life stages and events
+        const lifeStages = {
+            'Infancia': { min: 5, max: 12, events: ['curious', 'active', 'social', 'creative'] },
+            'Adolescencia': { min: 13, max: 18, events: ['study', 'rebel', 'romance', 'sport'] },
+            'Juventud': { min: 19, max: 30, events: ['career', 'travel', 'relationship', 'education'] },
+            'Adultez': { min: 31, max: 55, events: ['family', 'business', 'mentor', 'crisis'] },
+            'Madurez': { min: 56, max: 80, events: ['wisdom', 'legacy', 'health', 'reflection'] }
+        };
+
+        function updateDisplay() {
+            document.getElementById('age').textContent = gameState.age;
+            document.getElementById('stage').textContent = gameState.stage;
+            document.getElementById('elementCount').textContent = gameState.elements.length;
+            document.getElementById('score').textContent = gameState.score;
+            
+            // Update stats
+            ['physical', 'mental', 'social'].forEach(stat => {
+                const value = Math.max(0, Math.min(100, gameState.stats[stat]));
+                document.getElementById(stat + 'Value').textContent = value;
+                document.getElementById(stat + 'Bar').style.width = value + '%';
+            });
+
+            // Update life progress
+            const progress = Math.min(100, (gameState.age / 80) * 100);
+            document.getElementById('lifeProgress').textContent = Math.round(progress) + '%';
+            document.getElementById('lifeProgressBar').style.width = progress + '%';
+
+            updateElementsGrid();
+        }
+
+        function updateElementsGrid() {
+            const grid = document.getElementById('elementsGrid');
+            grid.innerHTML = '';
+            
+            gameState.elements.forEach(element => {
+                const elementDiv = document.createElement('div');
+                elementDiv.className = 'element-card bg-primary text-white p-3 rounded-lg text-center cursor-pointer select-none text-sm font-medium';
+                elementDiv.textContent = element;
+                elementDiv.draggable = true;
+                elementDiv.onclick = () => selectElement(element);
+                elementDiv.ondragstart = (e) => {
+                    e.dataTransfer.setData('text/plain', element);
+                };
+                grid.appendChild(elementDiv);
+            });
+        }
+
+        function selectElement(element) {
+            if (gameState.selectedElements.length < 2 && !gameState.selectedElements.includes(element)) {
+                gameState.selectedElements.push(element);
+                updateCombinationArea();
+            }
+        }
+
+        function updateCombinationArea() {
+            const area = document.getElementById('combinationArea');
+            const prompt = document.getElementById('combinationPrompt');
+            
+            if (gameState.selectedElements.length === 0) {
+                prompt.textContent = 'Arrastra dos elementos aquí para combinarlos';
+                area.className = area.className.replace(' combination-glow', '');
+            } else if (gameState.selectedElements.length === 1) {
+                prompt.textContent = `${gameState.selectedElements[0]} + ?`;
+            } else if (gameState.selectedElements.length === 2) {
+                prompt.textContent = `${gameState.selectedElements[0]} + ${gameState.selectedElements[1]}`;
+                area.className += ' combination-glow';
+                setTimeout(tryCombination, 1000);
+            }
+        }
+
+        function tryCombination() {
+            const [elem1, elem2] = gameState.selectedElements;
+            const combo1 = `${elem1}+${elem2}`;
+            const combo2 = `${elem2}+${elem1}`;
+            
+            const combination = combinations[combo1] || combinations[combo2];
+            
+            if (combination && !gameState.elements.includes(combination.result)) {
+                // Successful combination
+                gameState.elements.push(combination.result);
+                gameState.discovered.push(combination.result);
+                
+                // Apply stat changes
+                Object.keys(combination.stats).forEach(stat => {
+                    gameState.stats[stat] += combination.stats[stat];
+                });
+                
+                gameState.score += 100;
+                
+                showDiscovery(combination);
+            } else {
+                showFailedCombination();
+            }
+            
+            // Reset selection
+            gameState.selectedElements = [];
+            updateCombinationArea();
+            updateDisplay();
+        }
+
+        function showDiscovery(combination) {
+            const discoveries = document.getElementById('recentDiscoveries');
+            discoveries.innerHTML = `
+                <div class="fade-in-up bg-green-100 dark:bg-green-900 p-3 rounded-lg mb-2">
+                    <div class="font-semibold text-green-800 dark:text-green-200">🎉 ¡Nuevo descubrimiento!</div>
+                    <div class="text-green-700 dark:text-green-300">${combination.result}: ${combination.description}</div>
+                </div>
+            ` + discoveries.innerHTML;
+        }
+
+        function showFailedCombination() {
+            const discoveries = document.getElementById('recentDiscoveries');
+            discoveries.innerHTML = `
+                <div class="fade-in-up bg-yellow-100 dark:bg-yellow-900 p-3 rounded-lg mb-2">
+                    <div class="text-yellow-800 dark:text-yellow-200">🤔 Esa combinación no funcionó... ¡sigue experimentando!</div>
+                </div>
+            ` + discoveries.innerHTML;
+        }
+
+        function makeChoice(choice) {
+            const choices = {
+                // Original choices
+                'curious': { 
+                    text: 'Tu curiosidad te lleva a descubrir cosas fascinantes. Haces muchas preguntas que impresionan a los adultos.',
+                    stats: { mental: 5, social: 2 },
+                    element: 'Observación'
+                },
+                'active': { 
+                    text: 'Corres, saltas y juegas con energía ilimitada. Tu cuerpo se vuelve más fuerte y resistente.',
+                    stats: { physical: 8, mental: -2 },
+                    element: 'Atletismo'
+                },
+                'social': { 
+                    text: 'Haces nuevos amigos en el parque. Aprendes a compartir y a entender las emociones de otros.',
+                    stats: { social: 8, mental: 3 },
+                    element: 'Empatía'
+                },
+                // New choices from generateNewChoices
+                'learn': {
+                    text: 'Te concentras en aprender cosas nuevas. Lees libros, haces preguntas y tu mente se expande cada día.',
+                    stats: { mental: 8, physical: -2 },
+                    element: 'Sabiduría'
+                },
+                'play': {
+                    text: 'Juegas y te diviertes con otros niños. Desarrollas habilidades sociales y físicas mientras te diviertes.',
+                    stats: { social: 6, physical: 4 },
+                    element: 'Diversión'
+                },
+                'help': {
+                    text: 'Ayudas en casa y eres responsable. Los adultos confían en ti y desarrollas un sentido del deber.',
+                    stats: { social: 5, mental: 3 },
+                    element: 'Responsabilidad'
+                },
+                'study': {
+                    text: 'Estudias duro para el futuro. Aunque a veces es difícil, sabes que la educación abrirá puertas.',
+                    stats: { mental: 10, social: -3 },
+                    element: 'Disciplina'
+                },
+                'friends': {
+                    text: 'Pasas tiempo con amigos. Fortaleces vínculos y aprendes sobre lealtad y confianza.',
+                    stats: { social: 10, mental: 2 },
+                    element: 'Amistad'
+                },
+                'hobby': {
+                    text: 'Desarrollas un talento especial que te apasiona. Tu dedicación te hace destacar.',
+                    stats: { mental: 6, physical: 4 },
+                    element: 'Talento'
+                },
+                // Infancia expanded
+                'explore_nature': {
+                    text: 'Exploras la naturaleza con fascinación. Cada insecto, cada hoja, cada sonido del bosque es un descubrimiento.',
+                    stats: { mental: 6, physical: 6 },
+                    element: 'Naturalista'
+                },
+                'make_friends': {
+                    text: 'Haces nuevos amigos en el colegio. Aprendes a compartir, a negociar y a resolver conflictos.',
+                    stats: { social: 10, mental: 2 },
+                    element: 'Sociable'
+                },
+                'be_creative': {
+                    text: 'Expresas tu creatividad a través del arte, la música o la escritura. Tu imaginación no tiene límites.',
+                    stats: { mental: 8, social: 4 },
+                    element: 'Creativo'
+                },
+                // Adolescencia expanded
+                'rebel': {
+                    text: 'Te rebelas contra las reglas y autoridad. Aunque esto causa conflictos, desarrollas independencia.',
+                    stats: { mental: 6, social: -5, physical: 3 },
+                    element: 'Rebeldía'
+                },
+                'romance': {
+                    text: 'Experimentas tu primer amor. Es intenso, confuso y te enseña sobre vulnerabilidad y conexión.',
+                    stats: { social: 8, mental: 4, physical: -2 },
+                    element: 'Romántico'
+                },
+                'identity': {
+                    text: 'Exploras quién eres realmente. Experimentas con diferentes estilos, ideas y formas de expresarte.',
+                    stats: { mental: 10, social: -3 },
+                    element: 'Autoconocimiento'
+                },
+                'volunteer': {
+                    text: 'Haces trabajo voluntario y ayudas a otros. Descubres el poder de hacer una diferencia positiva.',
+                    stats: { social: 8, mental: 6 },
+                    element: 'Altruismo'
+                },
+                'sports': {
+                    text: 'Participas en deportes competitivos. Aprendes sobre trabajo en equipo, disciplina y perseverancia.',
+                    stats: { physical: 10, social: 5, mental: 3 },
+                    element: 'Atleta'
+                },
+                // Juventud expanded  
+                'university': {
+                    text: 'Vas a la universidad y expandes tu mente. Estudias, debates y formas tu visión del mundo.',
+                    stats: { mental: 15, social: 5, physical: -5 },
+                    element: 'Académico'
+                },
+                'work': {
+                    text: 'Empiezas a trabajar y ganas independencia económica. Aprendes responsabilidad y autonomía.',
+                    stats: { mental: 8, social: 3, physical: 2 },
+                    element: 'Profesional'
+                },
+                'travel': {
+                    text: 'Viajas y conoces el mundo. Cada lugar te enseña algo nuevo sobre ti mismo y la humanidad.',
+                    stats: { mental: 12, social: 8, physical: 5 },
+                    element: 'Viajero'
+                },
+                'relationship': {
+                    text: 'Construyes una relación seria y profunda. Aprendes sobre compromiso, comunicación y amor maduro.',
+                    stats: { social: 12, mental: 5, physical: 3 },
+                    element: 'Compañero'
+                },
+                'entrepreneur': {
+                    text: 'Emprendes tu propio negocio. Es arriesgado pero emocionante crear algo desde cero.',
+                    stats: { mental: 10, social: 3, physical: -3 },
+                    element: 'Emprendedor'
+                },
+                'party': {
+                    text: 'Disfrutas intensamente la vida social. Conoces gente, vives experiencias, pero a veces descuidas otras áreas.',
+                    stats: { social: 15, physical: -5, mental: -5 },
+                    element: 'Fiestero'
+                },
+                'skill': {
+                    text: 'Te especializas profundamente en una habilidad. Tu dedicación te convierte en experto.',
+                    stats: { mental: 15, physical: 2 },
+                    element: 'Especialista'
+                },
+                // Adultez expanded
+                'career': {
+                    text: 'Te enfocas intensamente en tu carrera. Alcanzas logros profesionales pero sacrificas tiempo personal.',
+                    stats: { mental: 10, social: -5, physical: -3 },
+                    element: 'Ambicioso'
+                },
+                'family': {
+                    text: 'Formas una familia y tienes hijos. Es challenging pero increíblemente gratificante.',
+                    stats: { social: 15, mental: 5, physical: -5 },
+                    element: 'Padre/Madre'
+                },
+                'mentor': {
+                    text: 'Becomes mentor de jóvenes profesionales. Compartes tu conocimiento y experiencia.',
+                    stats: { mental: 8, social: 10 },
+                    element: 'Mentor'
+                },
+                'crisis': {
+                    text: 'Enfrentas una crisis de mediana edad. Cuestionas tus decisiones y buscas nuevo significado.',
+                    stats: { mental: 5, social: -8, physical: -5 },
+                    element: 'Crisis'
+                },
+                'community': {
+                    text: 'Te involucras activamente en tu comunidad. Organizas eventos y luchas por causas importantes.',
+                    stats: { social: 12, mental: 6 },
+                    element: 'Activista Comunitario'
+                },
+                'health': {
+                    text: 'Priorizas tu salud y bienestar. Ejercitas, meditas y cuidas tu cuerpo y mente.',
+                    stats: { physical: 12, mental: 6 },
+                    element: 'Saludable'
+                },
+                'invest': {
+                    text: 'Inviertes sabiamente en tu futuro financiero. Planificas para la jubilación y estabilidad.',
+                    stats: { mental: 8, social: -2 },
+                    element: 'Inversionista'
+                },
+                // Madurez expanded
+                'wisdom': {
+                    text: 'Compartes tu sabiduría con las nuevas generaciones. Tus experiencias son valiosas lecciones.',
+                    stats: { mental: 10, social: 8 },
+                    element: 'Sabio'
+                },
+                'legacy': {
+                    text: 'Trabajas conscientemente en construir tu legado. ¿Qué huella quieres dejar en el mundo?',
+                    stats: { mental: 12, social: 5 },
+                    element: 'Legado'
+                },
+                'grandparent': {
+                    text: 'Disfrutas enormemente ser abuelo/a. Una nueva perspectiva sobre la familia y el amor.',
+                    stats: { social: 15, mental: 5 },
+                    element: 'Abuelo/a'
+                },
+                'reflection': {
+                    text: 'Reflexionas profundamente sobre tu vida vivida. Aceptas tanto los logros como los errores.',
+                    stats: { mental: 15, social: -3 },
+                    element: 'Reflexivo'
+                },
+                'teach': {
+                    text: 'Enseñas formalmente a las nuevas generaciones. Tu conocimiento se perpetúa en otros.',
+                    stats: { mental: 8, social: 10 },
+                    element: 'Maestro'
+                },
+                'peace': {
+                    text: 'Encuentras una paz interior profunda. Has llegado a un lugar de aceptación y serenidad.',
+                    stats: { mental: 12, social: 3, physical: 5 },
+                    element: 'Paz Interior'
+                }
+            };
+
+            const selectedChoice = choices[choice];
+            if (selectedChoice) {
+                // Update story
+                const storyContent = document.getElementById('storyContent');
+                storyContent.innerHTML = `
+                    <div class="fade-in-up">
+                        <p class="mb-4">${selectedChoice.text}</p>
+                        <p class="text-primary font-semibold">Tu experiencia te ha enseñado algo nuevo...</p>
+                    </div>
+                `;
+
+                // Update stats
+                Object.keys(selectedChoice.stats).forEach(stat => {
+                    gameState.stats[stat] += selectedChoice.stats[stat];
+                });
+
+                // Add new element if not already present
+                if (selectedChoice.element && !gameState.elements.includes(selectedChoice.element)) {
+                    gameState.elements.push(selectedChoice.element);
+                    gameState.score += 50;
+                }
+
+                // Age up and potentially change stage
+                gameState.age += Math.floor(Math.random() * 2) + 1;
+                updateLifeStage();
+                
+                // Generate new choices after delay
+                setTimeout(() => {
+                    generateNewChoices();
+                }, 2000);
+                
+                updateDisplay();
+            } else {
+                console.log('Choice not found:', choice);
+            }
+        }
+
+        function updateLifeStage() {
+            for (const [stage, data] of Object.entries(lifeStages)) {
+                if (gameState.age >= data.min && gameState.age <= data.max && gameState.stage !== stage) {
+                    gameState.stage = stage;
+                    showStageTransition(stage);
+                    break;
+                }
+            }
+        }
+
+        function showStageTransition(newStage) {
+            const storyContent = document.getElementById('storyContent');
+            storyContent.innerHTML = `
+                <div class="fade-in-up text-center">
+                    <div class="text-3xl mb-4">🌟</div>
+                    <div class="text-xl font-bold text-primary mb-2">¡Nueva Etapa de Vida!</div>
+                    <div class="text-lg">Has entrado en la ${newStage}</div>
+                    <div class="text-sm text-gray-600 dark:text-gray-400 mt-2">Nuevas oportunidades y desafíos te esperan...</div>
+                </div>
+            `;
+        }
+
+        function generateNewChoices() {
+            // 1% chance of tragic dead end based on demographics and stage
+            if (Math.random() < 0.01) {
+                generateDeadEnd();
+                return;
+            }
+
+            // Random chance for negative events based on identity
+            if (Math.random() < 0.25) {
+                generateNegativeEvent();
+                return;
+            }
+            
+            const choices = document.getElementById('choices');
+            
+            // Generate appropriate choices for current life stage
+            const stageChoices = {
+                'Infancia': [
+                    { id: 'learn', text: '📚 Concentrarte en aprender cosas nuevas' },
+                    { id: 'play', text: '🎮 Jugar y divertirte con otros niños' },
+                    { id: 'help', text: '🤝 Ayudar en casa y ser responsable' },
+                    { id: 'explore_nature', text: '🌳 Explorar la naturaleza y aventurarte' },
+                    { id: 'make_friends', text: '👫 Hacer nuevos amigos en el colegio' },
+                    { id: 'be_creative', text: '🎨 Ser creativo y expresarte artísticamente' }
+                ],
+                'Adolescencia': [
+                    { id: 'study', text: '📖 Estudiar duro para el futuro' },
+                    { id: 'friends', text: '👫 Pasar tiempo con amigos' },
+                    { id: 'hobby', text: '🎨 Desarrollar un talento especial' },
+                    { id: 'rebel', text: '😤 Rebelarte contra las reglas' },
+                    { id: 'romance', text: '💕 Experimentar tu primer amor' },
+                    { id: 'identity', text: '🪞 Explorar tu identidad personal' },
+                    { id: 'volunteer', text: '🤲 Hacer trabajo voluntario' },
+                    { id: 'sports', text: '⚽ Participar en deportes competitivos' }
+                ],
+                'Juventud': [
+                    { id: 'university', text: '🎓 Ir a la universidad' },
+                    { id: 'work', text: '💼 Empezar a trabajar y ser independiente' },
+                    { id: 'travel', text: '✈️ Viajar y conocer el mundo' },
+                    { id: 'relationship', text: '❤️ Construir una relación seria' },
+                    { id: 'entrepreneur', text: '🚀 Emprender tu propio negocio' },
+                    { id: 'party', text: '🎉 Disfrutar la vida social intensamente' },
+                    { id: 'skill', text: '🛠️ Especializarte en una habilidad' }
+                ],
+                'Adultez': [
+                    { id: 'career', text: '📈 Enfocar en tu carrera profesional' },
+                    { id: 'family', text: '👨‍👩‍👧‍👦 Formar una familia' },
+                    { id: 'mentor', text: '👨‍🏫 Ser mentor de otros' },
+                    { id: 'crisis', text: '😰 Enfrentar una crisis de mediana edad' },
+                    { id: 'community', text: '🏘️ Involucrarte en tu comunidad' },
+                    { id: 'health', text: '💪 Cuidar tu salud y bienestar' },
+                    { id: 'invest', text: '💰 Invertir en tu futuro financiero' }
+                ],
+                'Madurez': [
+                    { id: 'wisdom', text: '🧙‍♂️ Compartir tu sabiduría con otros' },
+                    { id: 'legacy', text: '📚 Construir tu legado' },
+                    { id: 'grandparent', text: '👴 Disfrutar ser abuelo/a' },
+                    { id: 'reflection', text: '🤔 Reflexionar sobre tu vida' },
+                    { id: 'teach', text: '👨‍🏫 Enseñar a las nuevas generaciones' },
+                    { id: 'peace', text: '☮️ Encontrar paz interior' }
+                ]
+            };
+
+            const availableChoices = stageChoices[gameState.stage] || stageChoices['Infancia'];
+            // Randomize and pick 3-4 choices
+            const shuffled = availableChoices.sort(() => 0.5 - Math.random());
+            const selectedChoices = shuffled.slice(0, Math.min(4, shuffled.length));
+            
+            choices.innerHTML = selectedChoices.map(choice => `
+                <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="makeChoice('${choice.id}')">
+                    ${choice.text}
+                </button>
+            `).join('');
+        }
+
+        function generateNegativeEvent() {
+            const storyContent = document.getElementById('storyContent');
+            const choices = document.getElementById('choices');
+            
+            const negativeEvents = {
+                'niño': [
+                    {
+                        id: 'crying',
+                        story: 'Te sientes triste y empiezas a llorar. Algunos niños se burlan diciendo "los niños no lloran" y un adulto te dice que "seas fuerte como un hombre".',
+                        choices: [
+                            { id: 'hide_emotions', text: '😞 Esconder tus emociones para parecer "fuerte"' },
+                            { id: 'defend_emotions', text: '💪 Defender tu derecho a sentir emociones' },
+                            { id: 'find_support', text: '🤗 Buscar a alguien que te entienda' }
+                        ]
+                    },
+                    {
+                        id: 'sensitive',
+                        story: 'Te emocionas mucho viendo una película y otros niños te dicen que eres "muy sensible" o "como una niña". Te sientes confundido sobre si está bien sentir tanto.',
+                        choices: [
+                            { id: 'suppress_sensitivity', text: '🙈 Tratar de ser menos sensible' },
+                            { id: 'embrace_sensitivity', text: '❤️ Aceptar que ser sensible es normal' },
+                            { id: 'question_stereotypes', text: '🤔 Preguntarte por qué existen estas reglas' }
+                        ]
+                    }
+                ],
+                'niña': [
+                    {
+                        id: 'sports',
+                        story: 'Quieres jugar fútbol con los niños, pero te dicen que "eso no es para niñas" y que deberías jugar con muñecas. Te sientes frustrada y excluida.',
+                        choices: [
+                            { id: 'accept_limitation', text: '😔 Aceptar que no puedes jugar fútbol' },
+                            { id: 'insist_playing', text: '⚽ Insistir en tu derecho a jugar lo que quieras' },
+                            { id: 'find_alternative', text: '🌟 Buscar otras niñas que piensen como tú' }
+                        ]
+                    },
+                    {
+                        id: 'appearance',
+                        story: 'Una tía comenta que deberías preocuparte más por verte "bonita" y menos por ensuciarte jugando. Te hace sentir que tu valor depende de cómo te ves.',
+                        choices: [
+                            { id: 'focus_appearance', text: '💄 Empezar a preocuparte más por tu apariencia' },
+                            { id: 'ignore_comment', text: '🏃 Ignorar el comentario y seguir jugando' },
+                            { id: 'question_beauty', text: '🤨 Preguntarte por qué la belleza es tan importante' }
+                        ]
+                    }
+                ],
+                'queer': [
+                    {
+                        id: 'different',
+                        story: 'Otros niños notan que juegas y actúas diferente. Te hacen preguntas incómodas y algunos adultos parecen preocupados por tu "comportamiento extraño".',
+                        choices: [
+                            { id: 'conform', text: '😷 Tratar de actuar como los demás esperan' },
+                            { id: 'stay_authentic', text: '🌈 Mantenerte fiel a tu forma de ser' },
+                            { id: 'educate_others', text: '📚 Tratar de explicar que ser diferente está bien' }
+                        ]
+                    },
+                    {
+                        id: 'rejection',
+                        story: 'Un grupo de niños no te deja jugar con ellos porque dicen que eres "raro" y que no encajas. Te sientes solo y rechazado.',
+                        choices: [
+                            { id: 'change_self', text: '😞 Cambiar para ser aceptado' },
+                            { id: 'find_acceptance', text: '🔍 Buscar personas que te acepten como eres' },
+                            { id: 'build_confidence', text: '💪 Fortalecer tu autoestima independientemente' }
+                        ]
+                    }
+                ]
+            };
+
+            const identityEvents = negativeEvents[gameState.identity];
+            const selectedEvent = identityEvents[Math.floor(Math.random() * identityEvents.length)];
+            
+            storyContent.innerHTML = `
+                <div class="fade-in-up">
+                    <p class="mb-4">${selectedEvent.story}</p>
+                    <p class="text-red-600 dark:text-red-400 font-semibold">¿Cómo reaccionas a esta situación?</p>
+                </div>
+            `;
+            
+            choices.innerHTML = selectedEvent.choices.map(choice => `
+                <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="handleNegativeChoice('${selectedEvent.id}', '${choice.id}')">
+                    ${choice.text}
+                </button>
+            `).join('');
+        }
+
+        function handleNegativeChoice(eventId, choiceId) {
+            const negativeResponses = {
+                'niño': {
+                    'crying': {
+                        'hide_emotions': {
+                            text: 'Decides que no mostrarás más tus emociones. Aunque esto te protege de las burlas, sientes que pierdes una parte importante de ti.',
+                            stats: { social: 5, mental: -8 },
+                            element: 'Represión'
+                        },
+                        'defend_emotions': {
+                            text: 'Te mantienes firme en que sentir emociones es normal. Aunque algunos se burlan, encuentras adultos que te apoyan y valoran tu sensibilidad.',
+                            stats: { mental: 8, social: -3 },
+                            element: 'Valentía Emocional'
+                        },
+                        'find_support': {
+                            text: 'Buscas a personas que entiendan tus sentimientos. Descubres que hay adultos y otros niños que también sienten profundamente.',
+                            stats: { social: 6, mental: 5 },
+                            element: 'Red de Apoyo'
+                        }
+                    },
+                    'sensitive': {
+                        'suppress_sensitivity': {
+                            text: 'Intentas ser menos sensible, pero es difícil cambiar quién eres. Te sientes desconectado de ti mismo.',
+                            stats: { mental: -6, social: 3 },
+                            element: 'Dolor'
+                        },
+                        'embrace_sensitivity': {
+                            text: 'Decides que tu sensibilidad es un regalo. Aunque no todos lo entiendan, tú sabes que te permite conectar profundamente con el mundo.',
+                            stats: { mental: 10, social: 2 },
+                            element: 'Autoaceptación'
+                        },
+                        'question_stereotypes': {
+                            text: 'Empiezas a cuestionar por qué existen estas reglas sobre cómo deben actuar los niños. Tu mente crítica se desarrolla.',
+                            stats: { mental: 8, social: -2 },
+                            element: 'Pensamiento Crítico'
+                        }
+                    }
+                },
+                'niña': {
+                    'sports': {
+                        'accept_limitation': {
+                            text: 'Aceptas que no puedes jugar fútbol y te conformas con actividades "apropiadas para niñas". Sientes que una parte de ti se marchita.',
+                            stats: { physical: -5, mental: -5 },
+                            element: 'Conformidad'
+                        },
+                        'insist_playing': {
+                            text: 'Te niegas a aceptar la limitación y peleas por tu derecho a jugar. Enfrentas resistencia pero también encuentras apoyo.',
+                            stats: { physical: 8, mental: 6, social: -3 },
+                            element: 'Determinación'
+                        },
+                        'find_alternative': {
+                            text: 'Buscas a otras niñas que compartan tus intereses. Juntas crean su propio espacio para jugar lo que quieran.',
+                            stats: { social: 8, mental: 5 },
+                            element: 'Hermandad'
+                        }
+                    },
+                    'appearance': {
+                        'focus_appearance': {
+                            text: 'Empiezas a preocuparte más por cómo te ves que por lo que haces. Tu autoestima se vuelve dependiente de la apariencia.',
+                            stats: { social: 3, mental: -6 },
+                            element: 'Inseguridad'
+                        },
+                        'ignore_comment': {
+                            text: 'Decides que lo que otros piensan de tu apariencia no es importante. Tu confianza en ti misma se fortalece.',
+                            stats: { mental: 8, physical: 5 },
+                            element: 'Autoconfianza'
+                        },
+                        'question_beauty': {
+                            text: 'Te preguntas por qué la sociedad valora tanto la belleza en las niñas. Desarrollas una perspectiva crítica sobre los estándares sociales.',
+                            stats: { mental: 10, social: -2 },
+                            element: 'Consciencia Social'
+                        }
+                    }
+                },
+                'queer': {
+                    'different': {
+                        'conform': {
+                            text: 'Intentas actuar como los demás esperan, pero sientes que traicionas tu verdadero yo. La máscara se vuelve pesada.',
+                            stats: { social: 5, mental: -8 },
+                            element: 'Vergüenza'
+                        },
+                        'stay_authentic': {
+                            text: 'Decides que ser tú misme es más importante que la aprobación de otros. Tu autenticidad se convierte en tu fortaleza.',
+                            stats: { mental: 10, social: -5 },
+                            element: 'Autenticidad Feroz'
+                        },
+                        'educate_others': {
+                            text: 'Intentas educar a otros sobre la diversidad. Algunos aprenden, otros no, pero plantaste semillas importantes.',
+                            stats: { mental: 6, social: 3 },
+                            element: 'Educadore'
+                        }
+                    },
+                    'rejection': {
+                        'change_self': {
+                            text: 'Intentas cambiar para ser aceptade, pero pierdes tu esencia en el proceso. El dolor del rechazo interno es peor que el externo.',
+                            stats: { social: 3, mental: -10 },
+                            element: 'Rechazo'
+                        },
+                        'find_acceptance': {
+                            text: 'Buscas espacios y personas que te acepten como eres. Descubres que existe una comunidad que te entiende.',
+                            stats: { social: 8, mental: 5 },
+                            element: 'Comunidad'
+                        },
+                        'build_confidence': {
+                            text: 'Trabajas en amarte a ti misme sin depender de la validación externa. Tu fortaleza interior crece.',
+                            stats: { mental: 12, social: -2 },
+                            element: 'Autoamor'
+                        }
+                    }
+                }
+            };
+
+            const response = negativeResponses[gameState.identity][eventId][choiceId];
+            if (response) {
+                // Update story
+                const storyContent = document.getElementById('storyContent');
+                storyContent.innerHTML = `
+                    <div class="fade-in-up">
+                        <p class="mb-4">${response.text}</p>
+                        <p class="text-primary font-semibold">Esta experiencia difícil te ha cambiado...</p>
+                    </div>
+                `;
+
+                // Update stats
+                Object.keys(response.stats).forEach(stat => {
+                    gameState.stats[stat] += response.stats[stat];
+                });
+
+                // Add new element
+                if (response.element && !gameState.elements.includes(response.element)) {
+                    gameState.elements.push(response.element);
+                    if (response.stats.mental >= 0) {
+                        gameState.score += 75; // Growth through adversity is valuable
+                    } else {
+                        gameState.score += 25; // But painful experiences still teach us
+                    }
+                }
+
+                // Age up
+                gameState.age += Math.floor(Math.random() * 2) + 1;
+                updateLifeStage();
+                
+                // Continue the story
+                setTimeout(generateNewChoices, 3000);
+                updateDisplay();
+            }
+        }
+
+        // Setup drag and drop for combination area
+        document.getElementById('combinationArea').addEventListener('dragover', (e) => {
+            e.preventDefault();
+        });
+
+        document.getElementById('combinationArea').addEventListener('drop', (e) => {
+            e.preventDefault();
+            const element = e.dataTransfer.getData('text/plain');
+            selectElement(element);
+        });
+
+        // Dark mode detection
+        if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+        }
+        window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', event => {
+            if (event.matches) {
+                document.documentElement.classList.add('dark');
+            } else {
+                document.documentElement.classList.remove('dark');
+            }
+        });
+
+        // Identity selection function
+        function selectIdentity(identity) {
+            gameState.identity = identity;
+            document.getElementById('selectedIdentity').textContent = identity.charAt(0).toUpperCase() + identity.slice(1);
+            
+            // Hide identity selection and show game
+            document.getElementById('identitySelection').classList.add('hidden');
+            document.getElementById('gameContent').classList.remove('hidden');
+            
+            // Set identity-specific starting story
+            initializeStory();
+            updateDisplay();
+        }
+
+        function initializeStory() {
+            const identityStories = {
+                'niño': {
+                    intro: 'Eres un niño de 5 años lleno de curiosidad. El mundo es grande y misterioso, y cada día trae nuevas aventuras esperándote.',
+                    elements: ['Curiosidad', 'Energía', 'Valentía']
+                },
+                'niña': {
+                    intro: 'Eres una niña de 5 años con una imaginación desbordante. Todo a tu alrededor parece mágico y lleno de posibilidades.',
+                    elements: ['Curiosidad', 'Creatividad', 'Empatía']
+                },
+                'queer': {
+                    intro: 'Eres una personita de 5 años que ve el mundo de manera única. Sientes que no necesitas encajar en cajas predefinidas y eso te hace especial.',
+                    elements: ['Curiosidad', 'Autenticidad', 'Sensibilidad']
+                }
+            };
+
+            const story = identityStories[gameState.identity];
+            gameState.elements = story.elements;
+            
+            const storyContent = document.getElementById('storyContent');
+            storyContent.innerHTML = `
+                <div class="fade-in-up">
+                    <p class="mb-4">${story.intro}</p>
+                    <p class="text-primary font-semibold">¿Qué quieres hacer hoy?</p>
+                </div>
+            `;
+            
+            generateIdentitySpecificChoices();
+        }
+
+        function generateIdentitySpecificChoices() {
+            const choices = document.getElementById('choices');
+            
+            const identityChoices = {
+                'niño': [
+                    { id: 'explore', text: '🔍 Explorar y buscar tesoros en el jardín' },
+                    { id: 'build', text: '🏗️ Construir algo genial con bloques' },
+                    { id: 'compete', text: '🏃 Competir corriendo con otros niños' }
+                ],
+                'niña': [
+                    { id: 'imagine', text: '🌟 Crear historias mágicas con tus juguetes' },
+                    { id: 'care', text: '🤗 Cuidar de tus muñecas como una mamá' },
+                    { id: 'draw', text: '🎨 Dibujar y crear arte hermoso' }
+                ],
+                'queer': [
+                    { id: 'question', text: '❓ Hacer preguntas sobre por qué las cosas son como son' },
+                    { id: 'different', text: '🌈 Jugar de manera diferente a como otros esperan' },
+                    { id: 'feel', text: '💭 Explorar todos tus sentimientos y emociones' }
+                ]
+            };
+
+            const availableChoices = identityChoices[gameState.identity];
+            
+            choices.innerHTML = availableChoices.map(choice => `
+                <button class="w-full text-left p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors" onclick="makeIdentityChoice('${choice.id}')">
+                    ${choice.text}
+                </button>
+            `).join('');
+        }
+
+        function makeIdentityChoice(choice) {
+            const identityResponses = {
+                'niño': {
+                    'explore': { 
+                        text: 'Encuentras una piedra brillante que decides que es un tesoro real. Tu espíritu aventurero se fortalece.',
+                        stats: { mental: 6, physical: 4 },
+                        element: 'Aventurero'
+                    },
+                    'build': { 
+                        text: 'Construyes una torre impresionante que resiste todos los intentos de derribarla. Te sientes orgulloso de tu logro.',
+                        stats: { mental: 8, physical: 2 },
+                        element: 'Constructor'
+                    },
+                    'compete': { 
+                        text: 'Corres tan rápido que sientes que vuelas. Otros niños te admiran y quieren ser como tú.',
+                        stats: { physical: 8, social: 4 },
+                        element: 'Competitivo'
+                    }
+                },
+                'niña': {
+                    'imagine': { 
+                        text: 'Creas una historia tan hermosa que hasta los adultos se quedan escuchando fascinados. Tu imaginación no tiene límites.',
+                        stats: { mental: 8, social: 4 },
+                        element: 'Narradora'
+                    },
+                    'care': { 
+                        text: 'Cuidas de tus muñecas con tanto amor que otras niñas quieren aprender de ti. Desarrollas un corazón compasivo.',
+                        stats: { social: 8, mental: 4 },
+                        element: 'Cuidadora'
+                    },
+                    'draw': { 
+                        text: 'Tu dibujo es tan expresivo que captura emociones que las palabras no pueden describir. Eres una artista natural.',
+                        stats: { mental: 6, social: 6 },
+                        element: 'Artista'
+                    }
+                },
+                'queer': {
+                    'question': { 
+                        text: 'Tus preguntas hacen que los adultos piensen en cosas que nunca habían considerado. Tu perspectiva única es valiosa.',
+                        stats: { mental: 8, social: 4 },
+                        element: 'Filósofe'
+                    },
+                    'different': { 
+                        text: 'Juegas de una manera tan creativa que otros niños se sienten libres de ser ellos mismos también. Eres un catalizador de autenticidad.',
+                        stats: { social: 6, mental: 6 },
+                        element: 'Pionere'
+                    },
+                    'feel': { 
+                        text: 'Exploras tus emociones profundamente y descubres que puedes sentir cosas que otros no entienden. Tu sensibilidad es un superpoder.',
+                        stats: { mental: 6, social: 6 },
+                        element: 'Empátique'
+                    }
+                }
+            };
+
+            const response = identityResponses[gameState.identity][choice];
+            if (response) {
+                // Update story
+                const storyContent = document.getElementById('storyContent');
+                storyContent.innerHTML = `
+                    <div class="fade-in-up">
+                        <p class="mb-4">${response.text}</p>
+                        <p class="text-primary font-semibold">Has descubierto algo nuevo sobre ti...</p>
+                    </div>
+                `;
+
+                // Update stats
+                Object.keys(response.stats).forEach(stat => {
+                    gameState.stats[stat] += response.stats[stat];
+                });
+
+                // Add new element
+                if (response.element && !gameState.elements.includes(response.element)) {
+                    gameState.elements.push(response.element);
+                    gameState.score += 50;
+                }
+
+                // Age up
+                gameState.age += Math.floor(Math.random() * 2) + 1;
+                updateLifeStage();
+                
+                // Generate new choices after delay
+                setTimeout(() => {
+                    generateNewChoices();
+                }, 2000);
+                
+                updateDisplay();
+            }
+        }
+
+        function generateDeadEnd() {
+            const storyContent = document.getElementById('storyContent');
+            const choices = document.getElementById('choices');
+            
+            const deadEnds = {
+                'niño': {
+                    'Infancia': {
+                        story: 'Un día, mientras juegas en el parque, un extraño se acerca ofreciéndote dulces. A pesar de las advertencias de tus padres, tu curiosidad infantil te traiciona.',
+                        message: 'Tu historia termina aquí. Esta tragedia representa las miles de desapariciones infantiles que ocurren cada año. La protección de la infancia requiere vigilancia constante de toda la sociedad.'
+                    },
+                    'Adolescencia': {
+                        story: 'Durante una salida nocturna con amigos, decides separarte del grupo. Es la última vez que alguien te ve.',
+                        message: 'Tu historia termina aquí. Esto refleja la realidad de muchos jóvenes que desaparecen sin explicación. La inseguridad afecta a todas las familias, especialmente en las zonas urbanas.'
+                    },
+                    'Juventud': {
+                        story: 'Después de una noche normal en la universidad, nunca llegas a casa. Tu familia nunca obtiene respuestas.',
+                        message: 'Tu historia termina aquí. Las desapariciones forzadas son una realidad dolorosa. Miles de familias viven en la incertidumbre, esperando noticias que nunca llegan.'
+                    },
+                    'Adultez': {
+                        story: 'Mientras vas al trabajo un martes cualquiera, simplemente desapareces. Tu familia busca respuestas que nunca llegan.',
+                        message: 'Tu historia termina aquí. La violencia y criminalidad cobran vidas inocentes diariamente. Cada estadística representa una familia destruida.'
+                    }
+                },
+                'niña': {
+                    'Infancia': {
+                        story: 'Mientras caminas a la escuela, alguien te lleva. Tu familia nunca vuelve a verte.',
+                        message: 'Tu historia termina aquí. Las niñas enfrentan riesgos particulares de violencia y trata. La protección infantil debe ser una prioridad absoluta para toda sociedad.'
+                    },
+                    'Adolescencia': {
+                        story: 'Tu primera relación se vuelve posesiva y violenta. Una noche, la discusión va demasiado lejos.',
+                        message: 'Tu historia termina aquí. La violencia de pareja es la principal causa de muerte de mujeres jóvenes. Una mujer muere cada día a manos de su pareja o ex-pareja.'
+                    },
+                    'Juventud': {
+                        story: 'Después de terminar una relación tóxica, tu ex-novio no acepta la decisión. La violencia machista reclama otra víctima.',
+                        message: 'Tu historia termina aquí. El feminicidio es una pandemia global. Cada 11 minutos una mujer es asesinada por violencia de género. Tu historia representa a millones.'
+                    },
+                    'Adultez': {
+                        story: 'Una discusión doméstica escala hasta lo irreversible. La violencia intrafamiliar cobra otra vida.',
+                        message: 'Tu historia termina aquí. La violencia doméstica mata a más mujeres que el cáncer, los accidentes de tráfico y la guerra combinados. El silencio es cómplice.'
+                    }
+                },
+                'queer': {
+                    'Infancia': {
+                        story: 'Otros niños notan que eres "diferente". Una broma cruel en el recreo termina en tragedia.',
+                        message: 'Tu historia termina aquí. Los niños LGBTQ+ sufren bullying extremo desde temprana edad. El rechazo familiar y social lleva a tasas alarmantes de suicidio juvenil.'
+                    },
+                    'Adolescencia': {
+                        story: 'Decides contarle a tu familia sobre tu identidad. La reacción es peor de lo que imaginaste. El rechazo total te lleva a tomar una decisión definitiva.',
+                        message: 'Tu historia termina aquí. El 40% de los jóvenes LGBTQ+ consideran el suicidio. El rechazo familiar multiplica el riesgo por 8. El amor incondicional salva vidas.'
+                    },
+                    'Juventud': {
+                        story: 'Mientras caminas de la mano con tu pareja, un grupo de personas decide que tu amor es una "amenaza" a sus valores.',
+                        message: 'Tu historia termina aquí. Los crímenes de odio contra personas LGBTQ+ aumentan cada año. Tu identidad no es una amenaza; la intolerancia sí lo es.'
+                    },
+                    'Adultez': {
+                        story: 'Un día normal se convierte en pesadilla cuando alguien decide que tu existencia ofende sus creencias.',
+                        message: 'Tu historia termina aquí. La violencia por prejuicio LGBTQ+ es una realidad global. Cada persona tiene derecho a existir auténticamente sin miedo.'
+                    }
+                }
+            };
+
+            const identityDeadEnds = deadEnds[gameState.identity];
+            const stageDeadEnds = identityDeadEnds[gameState.stage] || identityDeadEnds['Infancia'];
+            
+            storyContent.innerHTML = `
+                <div class="fade-in-up">
+                    <p class="mb-4 text-red-800 dark:text-red-300">${stageDeadEnds.story}</p>
+                    <div class="bg-black text-white p-4 rounded-lg mb-4">
+                        <p class="font-bold text-center text-xl mb-2">GAME OVER</p>
+                        <p class="text-sm">${stageDeadEnds.message}</p>
+                    </div>
+                    <div class="text-center">
+                        <p class="text-gray-600 dark:text-gray-400 mb-4">Edad final: ${gameState.age} años | Puntuación: ${gameState.score}</p>
+                        <p class="text-sm text-gray-500 dark:text-gray-500">Estas tragedias son realidades que enfrentan millones de personas. La conciencia social es el primer paso hacia el cambio.</p>
+                    </div>
+                </div>
+            `;
+            
+            choices.innerHTML = `
+                <button class="w-full text-center p-4 bg-primary text-white rounded-lg hover:bg-primary/80 transition-colors" onclick="location.reload()">
+                    🔄 Comenzar Nueva Vida
+                </button>
+                <div class="mt-4 text-center">
+                    <a href="#" onclick="showResources()" class="text-sm text-primary hover:underline">
+                        📞 Recursos de Ayuda y Apoyo
+                    </a>
+                </div>
+            `;
+        }
+
+        function showResources() {
+            const discoveries = document.getElementById('recentDiscoveries');
+            discoveries.innerHTML = `
+                <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
+                    <div class="font-semibold text-blue-800 dark:text-blue-200 mb-2">🆘 Recursos de Emergencia</div>
+                    <div class="text-sm text-blue-700 dark:text-blue-300">
+                        <p><strong>Violencia Doméstica:</strong> 911 (emergencia)</p>
+                        <p><strong>Línea LGBT:</strong> Depende del país</p>
+                        <p><strong>Salud Mental:</strong> Servicios locales de crisis</p>
+                        <p><strong>Búsqueda de Desaparecidos:</strong> Autoridades locales</p>
+                        <p class="mt-2 font-semibold">Si tú o alguien que conoces está en peligro, busca ayuda inmediatamente.</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Initialize game (don't auto-start)
+        // updateDisplay();
+    </script>
+</body>
+</html>
