@@ -1,6 +1,8 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#8B5CF6">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Life Alchemy - Simulador de Vida</title>
@@ -1281,6 +1283,13 @@
                 </div>
             `;
         }
+
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('./service-worker.js')
+    .then(() => console.log('Service Worker registrado'))
+    .catch(err => console.error('Error al registrar SW:', err));
+}
+
 
         // Initialize game (don't auto-start)
         // updateDisplay();
