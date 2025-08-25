@@ -663,21 +663,14 @@
         }
 
         function updateLifeStage() {
-    for (const [stage, data] of Object.entries(lifeStages)) {
-        if (gameState.age >= data.min && gameState.age <= data.max && gameState.stage !== stage) {
-            gameState.stage = stage;
-            showStageTransition(stage);
-            break;
+            for (const [stage, data] of Object.entries(lifeStages)) {
+                if (gameState.age >= data.min && gameState.age <= data.max && gameState.stage !== stage) {
+                    gameState.stage = stage;
+                    showStageTransition(stage);
+                    break;
+                }
+            }
         }
-    }
-
-    // Finaliza la vida automáticamente al alcanzar 80 años o más
-    if (gameState.age >= 80) {
-        generateDeadEnd();
-        return;
-    }
-}
-
 
         function showStageTransition(newStage) {
             const storyContent = document.getElementById('storyContent');
@@ -692,6 +685,12 @@
         }
 
         function generateNewChoices() {
+            // Check if life has ended naturally
+            if (gameState.age >= 80) {
+                generateNaturalEnd();
+                return;
+            }
+
             // 1% chance of tragic dead end based on demographics and stage
             if (Math.random() < 0.01) {
                 generateDeadEnd();
@@ -770,70 +769,326 @@
             const storyContent = document.getElementById('storyContent');
             const choices = document.getElementById('choices');
             
-            const negativeEvents = {
-                'niño': [
-                    {
-                        id: 'crying',
-                        story: 'Te sientes triste y empiezas a llorar. Algunos niños se burlan diciendo "los niños no lloran" y un adulto te dice que "seas fuerte como un hombre".',
-                        choices: [
-                            { id: 'hide_emotions', text: '😞 Esconder tus emociones para parecer "fuerte"' },
-                            { id: 'defend_emotions', text: '💪 Defender tu derecho a sentir emociones' },
-                            { id: 'find_support', text: '🤗 Buscar a alguien que te entienda' }
-                        ]
-                    },
-                    {
-                        id: 'sensitive',
-                        story: 'Te emocionas mucho viendo una película y otros niños te dicen que eres "muy sensible" o "como una niña". Te sientes confundido sobre si está bien sentir tanto.',
-                        choices: [
-                            { id: 'suppress_sensitivity', text: '🙈 Tratar de ser menos sensible' },
-                            { id: 'embrace_sensitivity', text: '❤️ Aceptar que ser sensible es normal' },
-                            { id: 'question_stereotypes', text: '🤔 Preguntarte por qué existen estas reglas' }
-                        ]
-                    }
-                ],
-                'niña': [
-                    {
-                        id: 'sports',
-                        story: 'Quieres jugar fútbol con los niños, pero te dicen que "eso no es para niñas" y que deberías jugar con muñecas. Te sientes frustrada y excluida.',
-                        choices: [
-                            { id: 'accept_limitation', text: '😔 Aceptar que no puedes jugar fútbol' },
-                            { id: 'insist_playing', text: '⚽ Insistir en tu derecho a jugar lo que quieras' },
-                            { id: 'find_alternative', text: '🌟 Buscar otras niñas que piensen como tú' }
-                        ]
-                    },
-                    {
-                        id: 'appearance',
-                        story: 'Una tía comenta que deberías preocuparte más por verte "bonita" y menos por ensuciarte jugando. Te hace sentir que tu valor depende de cómo te ves.',
-                        choices: [
-                            { id: 'focus_appearance', text: '💄 Empezar a preocuparte más por tu apariencia' },
-                            { id: 'ignore_comment', text: '🏃 Ignorar el comentario y seguir jugando' },
-                            { id: 'question_beauty', text: '🤨 Preguntarte por qué la belleza es tan importante' }
-                        ]
-                    }
-                ],
-                'queer': [
-                    {
-                        id: 'different',
-                        story: 'Otros niños notan que juegas y actúas diferente. Te hacen preguntas incómodas y algunos adultos parecen preocupados por tu "comportamiento extraño".',
-                        choices: [
-                            { id: 'conform', text: '😷 Tratar de actuar como los demás esperan' },
-                            { id: 'stay_authentic', text: '🌈 Mantenerte fiel a tu forma de ser' },
-                            { id: 'educate_others', text: '📚 Tratar de explicar que ser diferente está bien' }
-                        ]
-                    },
-                    {
-                        id: 'rejection',
-                        story: 'Un grupo de niños no te deja jugar con ellos porque dicen que eres "raro" y que no encajas. Te sientes solo y rechazado.',
-                        choices: [
-                            { id: 'change_self', text: '😞 Cambiar para ser aceptado' },
-                            { id: 'find_acceptance', text: '🔍 Buscar personas que te acepten como eres' },
-                            { id: 'build_confidence', text: '💪 Fortalecer tu autoestima independientemente' }
-                        ]
-                    }
-                ]
+            const negativeEventsByStage = {
+                'Infancia': {
+                    'niño': [
+                        {
+                            id: 'crying',
+                            story: 'Te sientes triste y empiezas a llorar. Algunos niños se burlan diciendo "los niños no lloran" y un adulto te dice que "seas fuerte como un hombre".',
+                            choices: [
+                                { id: 'hide_emotions', text: '😞 Esconder tus emociones para parecer "fuerte"' },
+                                { id: 'defend_emotions', text: '💪 Defender tu derecho a sentir emociones' },
+                                { id: 'find_support', text: '🤗 Buscar a alguien que te entienda' }
+                            ]
+                        },
+                        {
+                            id: 'sensitive',
+                            story: 'Te emocionas mucho viendo una película y otros niños te dicen que eres "muy sensible" o "como una niña". Te sientes confundido sobre si está bien sentir tanto.',
+                            choices: [
+                                { id: 'suppress_sensitivity', text: '🙈 Tratar de ser menos sensible' },
+                                { id: 'embrace_sensitivity', text: '❤️ Aceptar que ser sensible es normal' },
+                                { id: 'question_stereotypes', text: '🤔 Preguntarte por qué existen estas reglas' }
+                            ]
+                        }
+                    ],
+                    'niña': [
+                        {
+                            id: 'sports',
+                            story: 'Quieres jugar fútbol con los niños, pero te dicen que "eso no es para niñas" y que deberías jugar con muñecas. Te sientes frustrada y excluida.',
+                            choices: [
+                                { id: 'accept_limitation', text: '😔 Aceptar que no puedes jugar fútbol' },
+                                { id: 'insist_playing', text: '⚽ Insistir en tu derecho a jugar lo que quieras' },
+                                { id: 'find_alternative', text: '🌟 Buscar otras niñas que piensen como tú' }
+                            ]
+                        },
+                        {
+                            id: 'appearance',
+                            story: 'Una tía comenta que deberías preocuparte más por verte "bonita" y menos por ensuciarte jugando. Te hace sentir que tu valor depende de cómo te ves.',
+                            choices: [
+                                { id: 'focus_appearance', text: '💄 Empezar a preocuparte más por tu apariencia' },
+                                { id: 'ignore_comment', text: '🏃 Ignorar el comentario y seguir jugando' },
+                                { id: 'question_beauty', text: '🤨 Preguntarte por qué la belleza es tan importante' }
+                            ]
+                        }
+                    ],
+                    'queer': [
+                        {
+                            id: 'different',
+                            story: 'Otros niños notan que juegas y actúas diferente. Te hacen preguntas incómodas y algunos adultos parecen preocupados por tu "comportamiento extraño".',
+                            choices: [
+                                { id: 'conform', text: '😷 Tratar de actuar como los demás esperan' },
+                                { id: 'stay_authentic', text: '🌈 Mantenerte fiel a tu forma de ser' },
+                                { id: 'educate_others', text: '📚 Tratar de explicar que ser diferente está bien' }
+                            ]
+                        },
+                        {
+                            id: 'rejection',
+                            story: 'Un grupo de niños no te deja jugar con ellos porque dicen que eres "raro" y que no encajas. Te sientes solo y rechazado.',
+                            choices: [
+                                { id: 'change_self', text: '😞 Cambiar para ser aceptado' },
+                                { id: 'find_acceptance', text: '🔍 Buscar personas que te acepten como eres' },
+                                { id: 'build_confidence', text: '💪 Fortalecer tu autoestima independientemente' }
+                            ]
+                        }
+                    ]
+                },
+                'Adolescencia': {
+                    'niño': [
+                        {
+                            id: 'peer_pressure',
+                            story: 'Tus amigos empiezan a presionarte para que pruebes alcohol y cigarrillos. Dicen que "ya no eres un niño" y que debes "actuar como hombre".',
+                            choices: [
+                                { id: 'give_in', text: '🍺 Ceder a la presión para encajar' },
+                                { id: 'resist', text: '🚫 Resistir y mantener tus valores' },
+                                { id: 'find_new_friends', text: '👥 Buscar amigos que respeten tus decisiones' }
+                            ]
+                        },
+                        {
+                            id: 'toxic_masculinity',
+                            story: 'En educación física, otros chicos se burlan porque no eres el más fuerte. Te dicen que no eres "suficientemente masculino".',
+                            choices: [
+                                { id: 'overcompensate', text: '💪 Sobrecompensar actuando agresivo' },
+                                { id: 'ignore_taunts', text: '🧘 Ignorar las burlas y ser tú mismo' },
+                                { id: 'redefine_masculinity', text: '🤔 Cuestionar qué significa ser "masculino"' }
+                            ]
+                        }
+                    ],
+                    'niña': [
+                        {
+                            id: 'body_image',
+                            story: 'Tu cuerpo está cambiando y recibes comentarios no deseados de compañeros. Te sientes incómoda y cohibida en tu propia piel.',
+                            choices: [
+                                { id: 'hide_body', text: '👗 Usar ropa holgada para esconder tu cuerpo' },
+                                { id: 'embrace_changes', text: '💪 Aceptar y abrazar los cambios naturales' },
+                                { id: 'seek_support', text: '💬 Hablar con mujeres de confianza sobre el tema' }
+                            ]
+                        },
+                        {
+                            id: 'academic_pressure',
+                            story: 'Un maestro sugiere que tal vez las matemáticas "no son para ti" y que deberías enfocarte en materias "más femeninas".',
+                            choices: [
+                                { id: 'accept_stereotype', text: '😔 Aceptar que tal vez no eres buena en ciencias' },
+                                { id: 'prove_wrong', text: '📚 Estudiar más duro para demostrar que está equivocado' },
+                                { id: 'report_bias', text: '⚖️ Reportar el comentario discriminatorio' }
+                            ]
+                        }
+                    ],
+                    'queer': [
+                        {
+                            id: 'coming_out_pressure',
+                            story: 'Sientes atracción hacia alguien de tu mismo género pero no sabes cómo manejar estos sentimientos. El miedo al rechazo te paraliza.',
+                            choices: [
+                                { id: 'suppress_feelings', text: '🤐 Suprimir y negar estos sentimientos' },
+                                { id: 'explore_safely', text: '🔍 Explorar tu identidad en espacios seguros' },
+                                { id: 'seek_information', text: '📖 Buscar información y recursos LGBTQ+' }
+                            ]
+                        },
+                        {
+                            id: 'religious_conflict',
+                            story: 'Tu familia religiosa habla negativamente sobre personas LGBTQ+. Te sientes atrapado entre tu identidad y tu familia.',
+                            choices: [
+                                { id: 'deny_self', text: '⛪ Intentar "rezar" para cambiar tus sentimientos' },
+                                { id: 'slow_revelation', text: '⏳ Tomar tiempo para preparar una conversación honesta' },
+                                { id: 'find_allies', text: '🤝 Buscar aliados en tu comunidad religiosa' }
+                            ]
+                        }
+                    ]
+                },
+                'Juventud': {
+                    'niño': [
+                        {
+                            id: 'career_pressure',
+                            story: 'Tu padre espera que sigas sus pasos en los negocios, pero tú quieres estudiar arte. Te dice que "los hombres tienen que ser proveedores".',
+                            choices: [
+                                { id: 'follow_expectations', text: '💼 Seguir las expectativas familiares' },
+                                { id: 'follow_passion', text: '🎨 Seguir tu pasión a pesar de la presión' },
+                                { id: 'find_compromise', text: '⚖️ Buscar un compromiso entre ambos caminos' }
+                            ]
+                        },
+                        {
+                            id: 'emotional_walls',
+                            story: 'En tu primera relación seria, tu pareja se queja de que no compartes tus emociones. Años de "ser fuerte" han creado muros.',
+                            choices: [
+                                { id: 'maintain_walls', text: '🧱 Mantener las barreras emocionales' },
+                                { id: 'learn_vulnerability', text: '💔 Aprender a ser vulnerable poco a poco' },
+                                { id: 'seek_therapy', text: '🗣️ Buscar ayuda profesional para abrirte' }
+                            ]
+                        }
+                    ],
+                    'niña': [
+                        {
+                            id: 'workplace_harassment',
+                            story: 'En tu primer trabajo, un supervisor hace comentarios inapropiados y te asigna tareas de "secretaria" a pesar de tu título profesional.',
+                            choices: [
+                                { id: 'endure_silently', text: '🤐 Aguantar en silencio para no perder el trabajo' },
+                                { id: 'confront_directly', text: '⚡ Confrontar directamente el comportamiento' },
+                                { id: 'document_report', text: '📝 Documentar todo y reportar a recursos humanos' }
+                            ]
+                        },
+                        {
+                            id: 'relationship_control',
+                            story: 'Tu pareja se vuelve celosa y controladora. Revisa tu teléfono y decide con quién puedes salir. Dice que es "porque te ama".',
+                            choices: [
+                                { id: 'accept_control', text: '💔 Aceptar el control como "amor" ' },
+                                { id: 'set_boundaries', text: '🚫 Establecer límites claros' },
+                                { id: 'leave_relationship', text: '🚪 Terminar la relación antes de que empeore' }
+                            ]
+                        }
+                    ],
+                    'queer': [
+                        {
+                            id: 'workplace_closet',
+                            story: 'En tu nuevo trabajo, los colegas hacen chistes homófobos regularmente. No sabes si es seguro ser abierto sobre tu identidad.',
+                            choices: [
+                                { id: 'stay_closeted', text: '🚪 Mantener tu identidad privada en el trabajo' },
+                                { id: 'gradual_openness', text: '🌱 Ser gradualmente más abierto con personas de confianza' },
+                                { id: 'be_advocate', text: '🏳️‍🌈 Ser un defensor visible de la diversidad' }
+                            ]
+                        },
+                        {
+                            id: 'family_expectations',
+                            story: 'Tu familia constantemente pregunta cuándo vas a "sentar cabeza" y tener hijos. No entienden tu estilo de vida.',
+                            choices: [
+                                { id: 'fake_relationship', text: '🎭 Fingir relaciones heterosexuales para complacerlos' },
+                                { id: 'educate_family', text: '📚 Educar pacientemente a tu familia sobre diversidad' },
+                                { id: 'limit_contact', text: '📞 Limitar el contacto hasta que te acepten' }
+                            ]
+                        }
+                    ]
+                },
+                'Adultez': {
+                    'niño': [
+                        {
+                            id: 'midlife_crisis',
+                            story: 'A los 40, te das cuenta de que has vivido según las expectativas de otros. Te sientes vacío y cuestionas todas tus decisiones.',
+                            choices: [
+                                { id: 'drastic_changes', text: '🏃 Hacer cambios drásticos e impulsivos' },
+                                { id: 'gradual_reflection', text: '🤔 Reflexionar gradualmente y hacer cambios medidos' },
+                                { id: 'accept_status_quo', text: '😔 Aceptar que es muy tarde para cambiar' }
+                            ]
+                        },
+                        {
+                            id: 'fatherhood_struggle',
+                            story: 'Siendo padre, te das cuenta de que no sabes cómo expresar emociones a tus hijos. Repites los patrones de tu propia infancia.',
+                            choices: [
+                                { id: 'repeat_patterns', text: '🔄 Continuar con los patrones familiares' },
+                                { id: 'break_cycle', text: '💔 Conscientemente romper el ciclo' },
+                                { id: 'seek_help', text: '👨‍👩‍👧‍👦 Buscar clases de paternidad o terapia familiar' }
+                            ]
+                        }
+                    ],
+                    'niña': [
+                        {
+                            id: 'career_family_balance',
+                            story: 'Te preguntan constantemente cómo "balanceas" carrera y familia, mientras que a tu esposo nunca le hacen esta pregunta.',
+                            choices: [
+                                { id: 'sacrifice_career', text: '💼 Sacrificar carrera por la familia' },
+                                { id: 'fight_equality', text: '⚖️ Luchar por igualdad en responsabilidades domésticas' },
+                                { id: 'redefine_success', text: '🌟 Redefinir el éxito en tus propios términos' }
+                            ]
+                        },
+                        {
+                            id: 'aging_pressure',
+                            story: 'Los medios y la sociedad te bombardean con mensajes sobre "envejecer graciosamente". Sientes presión constante sobre tu apariencia.',
+                            choices: [
+                                { id: 'fight_aging', text: '💉 Invertir excesivamente en tratamientos anti-edad' },
+                                { id: 'embrace_aging', text: '👵 Abrazar el envejecimiento natural con dignidad' },
+                                { id: 'focus_health', text: '💪 Enfocarse en salud más que en apariencia' }
+                            ]
+                        }
+                    ],
+                    'queer': [
+                        {
+                            id: 'legal_discrimination',
+                            story: 'A pesar de avances legales, enfrentas discriminación sutil en adopción, atención médica o servicios. La igualdad legal no siempre significa igualdad real.',
+                            choices: [
+                                { id: 'avoid_conflict', text: '🤐 Evitar situaciones que puedan causar discriminación' },
+                                { id: 'fight_legally', text: '⚖️ Luchar legalmente contra cada instancia de discriminación' },
+                                { id: 'build_community', text: '🏘️ Construir redes comunitarias de apoyo mutuo' }
+                            ]
+                        },
+                        {
+                            id: 'parenting_challenges',
+                            story: 'Como padre/madre LGBTQ+, otros padres cuestionan tu capacidad parental. Tu hijo enfrenta preguntas incómodas sobre su familia.',
+                            choices: [
+                                { id: 'overprotect', text: '🛡️ Sobreproteger a tu hijo de comentarios negativos' },
+                                { id: 'educate_community', text: '📚 Educar activamente a la comunidad escolar' },
+                                { id: 'empower_child', text: '💪 Empoderar a tu hijo para que defienda su familia' }
+                            ]
+                        }
+                    ]
+                },
+                'Madurez': {
+                    'niño': [
+                        {
+                            id: 'retirement_identity',
+                            story: 'Al jubilarte, te das cuenta de que tu identidad estaba completamente atada a tu trabajo. Sin tu carrera, no sabes quién eres.',
+                            choices: [
+                                { id: 'stay_busy', text: '🏃 Mantenerte ocupado con múltiples actividades' },
+                                { id: 'find_purpose', text: '🎯 Buscar un nuevo propósito de vida' },
+                                { id: 'embrace_rest', text: '😌 Aprender a disfrutar el descanso y la reflexión' }
+                            ]
+                        },
+                        {
+                            id: 'health_decline',
+                            story: 'Tu salud comienza a declinar y necesitas ayuda con tareas básicas. Te cuesta aceptar la dependencia después de una vida de "ser fuerte".',
+                            choices: [
+                                { id: 'deny_help', text: '🚫 Rechazar ayuda para mantener la independencia' },
+                                { id: 'accept_gracefully', text: '🤝 Aceptar ayuda con gracia y gratitud' },
+                                { id: 'plan_care', text: '📋 Planificar proactivamente tu cuidado futuro' }
+                            ]
+                        }
+                    ],
+                    'niña': [
+                        {
+                            id: 'empty_nest',
+                            story: 'Tus hijos se han ido y tu esposo falleció. Después de décadas cuidando a otros, no sabes cómo cuidarte a ti misma.',
+                            choices: [
+                                { id: 'live_through_children', text: '👶 Vivir a través de los logros de tus hijos' },
+                                { id: 'rediscover_self', text: '🌟 Redescubrir quién eres fuera de los roles familiares' },
+                                { id: 'serve_others', text: '🤲 Canalizar tu naturaleza cuidadora ayudando a la comunidad' }
+                            ]
+                        },
+                        {
+                            id: 'financial_insecurity',
+                            story: 'Años de trabajos de medio tiempo y brechas salariales resultan en una jubilación financieramente insegura. La pobreza en la vejez es predominantemente femenina.',
+                            choices: [
+                                { id: 'depend_family', text: '👨‍👩‍👧‍👦 Depender de la familia para apoyo financiero' },
+                                { id: 'work_longer', text: '💼 Continuar trabajando más allá de la edad de jubilación' },
+                                { id: 'advocate_change', text: '📢 Abogar por mejores políticas para mujeres mayores' }
+                            ]
+                        }
+                    ],
+                    'queer': [
+                        {
+                            id: 'aging_isolation',
+                            story: 'Sin hijos tradicionales y con muchos amigos perdidos por el SIDA, enfrentas el envejecimiento con redes de apoyo limitadas.',
+                            choices: [
+                                { id: 'accept_isolation', text: '😔 Aceptar la soledad como inevitable' },
+                                { id: 'create_chosen_family', text: '👨‍👨‍👧‍👦 Crear una familia elegida intergeneracional' },
+                                { id: 'mentor_youth', text: '👥 Mentorear a jóvenes LGBTQ+ para crear legado' }
+                            ]
+                        },
+                        {
+                            id: 'healthcare_discrimination',
+                            story: 'En centros de cuidado para mayores, enfrentas personal que no entiende o acepta tu identidad. Tu pareja de décadas no es reconocida como familia.',
+                            choices: [
+                                { id: 'go_back_closet', text: '🚪 Volver al closet para evitar discriminación' },
+                                { id: 'fight_recognition', text: '⚖️ Luchar por reconocimiento y derechos' },
+                                { id: 'find_affirming_care', text: '🏥 Buscar centros de cuidado LGBTQ+ amigables' }
+                            ]
+                        }
+                    ]
+                }
             };
 
-            const identityEvents = negativeEvents[gameState.identity];
+            const stageEvents = negativeEventsByStage[gameState.stage];
+            if (!stageEvents || !stageEvents[gameState.identity]) {
+                generateNewChoices(); // Fallback to normal choices
+                return;
+            }
+
+            const identityEvents = stageEvents[gameState.identity];
             const selectedEvent = identityEvents[Math.floor(Math.random() * identityEvents.length)];
             
             storyContent.innerHTML = `
@@ -1023,6 +1278,12 @@
 
         // Identity selection function
         function selectIdentity(identity) {
+            // Easter egg: 0.1% chance of sudden infant death syndrome
+            if (Math.random() < 0.001) {
+                generateSIDSEasterEgg(identity);
+                return;
+            }
+
             gameState.identity = identity;
             document.getElementById('selectedIdentity').textContent = identity.charAt(0).toUpperCase() + identity.slice(1);
             
@@ -1033,6 +1294,118 @@
             // Set identity-specific starting story
             initializeStory();
             updateDisplay();
+        }
+
+        function generateSIDSEasterEgg(identity) {
+            // Hide identity selection and show game for the easter egg
+            document.getElementById('identitySelection').classList.add('hidden');
+            document.getElementById('gameContent').classList.remove('hidden');
+            
+            // Set the identity for the message
+            gameState.identity = identity;
+            document.getElementById('selectedIdentity').textContent = identity.charAt(0).toUpperCase() + identity.slice(1);
+            
+            const storyContent = document.getElementById('storyContent');
+            const choices = document.getElementById('choices');
+            
+            const identityMessages = {
+                'niño': 'Un hermoso bebé llegó al mundo lleno de promesas...',
+                'niña': 'Una preciosa bebé nació rodeada de amor y esperanza...',
+                'queer': 'Un ser humano único y especial comenzó su existencia...'
+            };
+
+            storyContent.innerHTML = `
+                <div class="fade-in-up">
+                    <p class="mb-4">${identityMessages[identity]}</p>
+                    <p class="mb-4 text-gray-600 dark:text-gray-400">Pero a los pocos meses de vida, durante el sueño, sin explicación ni síntomas previos, el pequeño corazón simplemente se detuvo.</p>
+                    
+                    <div class="bg-gradient-to-r from-gray-100 to-blue-100 dark:from-gray-800 dark:to-blue-900 p-4 rounded-lg mb-4">
+                        <p class="font-bold text-center text-xl mb-2">💫 Easter Egg: Síndrome de Muerte Súbita del Lactante</p>
+                        <div class="text-sm space-y-2">
+                            <p><strong>¿Qué es?</strong> El Síndrome de Muerte Súbita del Lactante (SMSL) es la muerte inexplicable de bebés aparentemente sanos durante el sueño, típicamente entre 2-4 meses de edad.</p>
+                            <p><strong>Frecuencia:</strong> Afecta aproximadamente a 1 de cada 1,000 bebés en países desarrollados.</p>
+                            <p><strong>Factores de riesgo:</strong> Dormir boca abajo, exposición al humo, sobrecalentamiento, prematuridad.</p>
+                            <p><strong>Prevención:</strong> Dormir boca arriba, ambiente libre de humo, lactancia materna, evitar objetos sueltos en la cuna.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-500 mb-4">
+                            Este easter egg extremadamente raro (0.1% probabilidad) representa una realidad médica que afecta a miles de familias cada año. 
+                            Aunque impredecible e inexplicable, la investigación continúa para entender y prevenir esta tragedia.
+                        </p>
+                        <p class="text-xs text-gray-400 dark:text-gray-600 mb-4">
+                            Cada bebé perdido por SMSL representa sueños, esperanzas y un futuro que nunca llegó a desarrollarse. 
+                            Las familias afectadas necesitan apoyo, comprensión y recursos para el duelo.
+                        </p>
+                    </div>
+                </div>
+            `;
+            
+            choices.innerHTML = `
+                <button class="w-full text-center p-4 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:opacity-80 transition-opacity" onclick="location.reload()">
+                    💫 Comenzar Una Nueva Vida
+                </button>
+                <div class="mt-4 text-center space-y-2">
+                    <button onclick="showSIDSResources()" class="text-sm text-primary hover:underline block w-full">
+                        🤱 Recursos sobre Prevención del SMSL
+                    </button>
+                    <button onclick="showGriefResources()" class="text-sm text-purple-600 hover:underline block w-full">
+                        💜 Recursos de Apoyo para Familias en Duelo
+                    </button>
+                </div>
+            `;
+
+            // Update stats display to show the brief life
+            document.getElementById('age').textContent = '0.3';
+            document.getElementById('stage').textContent = 'Lactante';
+            document.getElementById('elementCount').textContent = '0';
+            document.getElementById('score').textContent = '0';
+            
+            // Update progress bar to show minimal life
+            document.getElementById('lifeProgress').textContent = '0.4%';
+            document.getElementById('lifeProgressBar').style.width = '0.4%';
+            
+            // Clear elements grid
+            document.getElementById('elementsGrid').innerHTML = '<div class="col-span-3 text-center text-gray-500 text-sm">Sin elementos desarrollados</div>';
+        }
+
+        function showSIDSResources() {
+            const discoveries = document.getElementById('recentDiscoveries');
+            discoveries.innerHTML = `
+                <div class="bg-blue-100 dark:bg-blue-900 p-4 rounded-lg">
+                    <div class="font-semibold text-blue-800 dark:text-blue-200 mb-2">🤱 Prevención del SMSL</div>
+                    <div class="text-sm text-blue-700 dark:text-blue-300 space-y-1">
+                        <p><strong>• Posición para dormir:</strong> Siempre boca arriba, nunca boca abajo o de lado</p>
+                        <p><strong>• Superficie firme:</strong> Colchón firme con sábana ajustada</p>
+                        <p><strong>• Cuna vacía:</strong> Sin almohadas, mantas sueltas, juguetes o protectores</p>
+                        <p><strong>• Ambiente libre de humo:</strong> No fumar durante embarazo ni cerca del bebé</p>
+                        <p><strong>• Lactancia materna:</strong> Reduce significativamente el riesgo</p>
+                        <p><strong>• Temperatura adecuada:</strong> Evitar sobrecalentamiento</p>
+                        <p><strong>• Chupete:</strong> Ofrecerlo para dormir después del primer mes</p>
+                        <p><strong>• Consultas regulares:</strong> Seguimiento médico prenatal y pediátrico</p>
+                    </div>
+                </div>
+            `;
+        }
+
+        function showGriefResources() {
+            const discoveries = document.getElementById('recentDiscoveries');
+            discoveries.innerHTML = `
+                <div class="bg-purple-100 dark:bg-purple-900 p-4 rounded-lg">
+                    <div class="font-semibold text-purple-800 dark:text-purple-200 mb-2">💜 Apoyo para Familias en Duelo</div>
+                    <div class="text-sm text-purple-700 dark:text-purple-300 space-y-1">
+                        <p><strong>• First Candle:</strong> Organización de apoyo para familias afectadas por SMSL</p>
+                        <p><strong>• Compassionate Friends:</strong> Red de apoyo para padres que han perdido hijos</p>
+                        <p><strong>• Grupos de duelo:</strong> Terapia grupal especializada en pérdida perinatal</p>
+                        <p><strong>• Líneas de crisis:</strong> Apoyo telefónico 24/7 para momentos difíciles</p>
+                        <p><strong>• Terapia especializada:</strong> Profesionales en duelo perinatal y infantil</p>
+                        <p><strong>• Memoriales:</strong> Formas de honrar y recordar al bebé perdido</p>
+                        <p><strong>• Comunidades online:</strong> Foros y grupos de apoyo virtual</p>
+                        <p class="mt-2 font-semibold">El duelo por SMSL es único y complejo. No hay un "tiempo correcto" para sanar.</p>
+                    </div>
+                </div>
+            `;
         }
 
         function initializeStory() {
@@ -1275,6 +1648,115 @@
             `;
         }
 
+        function generateNaturalEnd() {
+            const storyContent = document.getElementById('storyContent');
+            const choices = document.getElementById('choices');
+            
+            const naturalEndings = {
+                'niño': {
+                    story: 'A los 80 años, te sientas en tu silla favorita rodeado de familia. Has vivido una vida plena, con sus altibajos, pero auténticamente tuya. Cierras los ojos por última vez sintiendo paz.',
+                    reflection: 'Tu camino como hombre te enseñó sobre fortaleza, vulnerabilidad, y la importancia de redefinir la masculinidad. Dejaste huella en quienes te rodearon.'
+                },
+                'niña': {
+                    story: 'A los 80 años, contemplas el atardecer desde tu ventana. Has luchado batallas que ninguna mujer debería pelear, pero también has conocido alegrías únicas. Tu legado vive en las vidas que tocaste.',
+                    reflection: 'Tu viaje como mujer te mostró la fuerza que reside en la ternura, la importancia de la sororidad, y cómo cambiar el mundo desde tu lugar en él.'
+                },
+                'queer': {
+                    story: 'A los 80 años, sonríes recordando todos los que vinieron antes que ti y lucharon para que tuvieras esta vida. Tu autenticidad inspiró a otros a vivir sin máscaras. Has contribuido a un mundo más diverso.',
+                    reflection: 'Tu experiencia queer te enseñó que la identidad es un regalo, que el amor viene en muchas formas, y que la diferencia es lo que hace bella a la humanidad.'
+                }
+            };
+
+            const ending = naturalEndings[gameState.identity];
+            
+            // Calculate final life summary
+            const totalElements = gameState.elements.length;
+            const avgStats = Math.round((gameState.stats.physical + gameState.stats.mental + gameState.stats.social) / 3);
+            
+            let lifeQuality = '';
+            if (avgStats >= 70) lifeQuality = 'extraordinaria';
+            else if (avgStats >= 50) lifeQuality = 'plena';
+            else if (avgStats >= 30) lifeQuality = 'desafiante pero significativa';
+            else lifeQuality = 'difícil pero valiosa';
+            
+            storyContent.innerHTML = `
+                <div class="fade-in-up">
+                    <p class="mb-4">${ending.story}</p>
+                    <div class="bg-gradient-to-r from-purple-100 to-blue-100 dark:from-purple-900 dark:to-blue-900 p-4 rounded-lg mb-4">
+                        <p class="font-bold text-center text-xl mb-2">🌟 Vida Completada 🌟</p>
+                        <p class="text-sm italic mb-4">${ending.reflection}</p>
+                        
+                        <div class="grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <strong>Resumen de Vida:</strong><br>
+                                • Años vividos: 80<br>
+                                • Elementos desarrollados: ${totalElements}<br>
+                                • Puntuación total: ${gameState.score}<br>
+                                • Calidad de vida: ${lifeQuality}
+                            </div>
+                            <div>
+                                <strong>Estadísticas finales:</strong><br>
+                                • Físico: ${gameState.stats.physical}<br>
+                                • Mental: ${gameState.stats.mental}<br>
+                                • Social: ${gameState.stats.social}<br>
+                                • Promedio: ${avgStats}
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="text-center">
+                        <p class="text-sm text-gray-500 dark:text-gray-500 mb-4">Cada vida es única y valiosa. Tu historia, con todos sus matices, contribuyó al tapiz humano.</p>
+                        <p class="text-xs text-gray-400 dark:text-gray-600">Elementos desarrollados: ${gameState.elements.join(', ')}</p>
+                    </div>
+                </div>
+            `;
+            
+            choices.innerHTML = `
+                <button class="w-full text-center p-4 bg-gradient-to-r from-primary to-secondary text-white rounded-lg hover:opacity-80 transition-opacity" onclick="location.reload()">
+                    🔄 Vivir Una Nueva Vida
+                </button>
+                <div class="mt-4 text-center">
+                    <button onclick="shareLife()" class="text-sm text-primary hover:underline">
+                        📤 Compartir Mi Historia de Vida
+                    </button>
+                </div>
+            `;
+        }
+
+        function shareLife() {
+            const summary = `🧬 Mi Vida en Life Alchemy 🧬
+
+Identidad: ${gameState.identity.charAt(0).toUpperCase() + gameState.identity.slice(1)}
+Años vividos: 80
+Elementos desarrollados: ${gameState.elements.length}
+Puntuación: ${gameState.score}
+
+Estadísticas finales:
+💪 Físico: ${gameState.stats.physical}
+🧠 Mental: ${gameState.stats.mental}
+❤️ Social: ${gameState.stats.social}
+
+Elementos únicos: ${gameState.elements.slice(-5).join(', ')}...
+
+¡Cada vida es una historia única! ¿Cómo será la tuya?`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: 'Mi Historia de Vida - Life Alchemy',
+                    text: summary
+                });
+            } else {
+                navigator.clipboard.writeText(summary).then(() => {
+                    const discoveries = document.getElementById('recentDiscoveries');
+                    discoveries.innerHTML = `
+                        <div class="bg-green-100 dark:bg-green-900 p-3 rounded-lg">
+                            <div class="text-green-800 dark:text-green-200">✅ Resumen copiado al portapapeles</div>
+                        </div>
+                    ` + discoveries.innerHTML;
+                });
+            }
+        }
+
         function showResources() {
             const discoveries = document.getElementById('recentDiscoveries');
             discoveries.innerHTML = `
@@ -1291,15 +1773,15 @@
             `;
         }
 
+        // Initialize game (don't auto-start)
+        // updateDisplay();
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./service-worker.js')
     .then(() => console.log('Service Worker registrado'))
     .catch(err => console.error('Error al registrar SW:', err));
 }
 
-
-        // Initialize game (don't auto-start)
-        // updateDisplay();
     </script>
 </body>
 </html>
+
