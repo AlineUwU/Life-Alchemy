@@ -663,14 +663,21 @@
         }
 
         function updateLifeStage() {
-            for (const [stage, data] of Object.entries(lifeStages)) {
-                if (gameState.age >= data.min && gameState.age <= data.max && gameState.stage !== stage) {
-                    gameState.stage = stage;
-                    showStageTransition(stage);
-                    break;
-                }
-            }
+    for (const [stage, data] of Object.entries(lifeStages)) {
+        if (gameState.age >= data.min && gameState.age <= data.max && gameState.stage !== stage) {
+            gameState.stage = stage;
+            showStageTransition(stage);
+            break;
         }
+    }
+
+    // Finaliza la vida automáticamente al alcanzar 80 años o más
+    if (gameState.age >= 80) {
+        generateDeadEnd();
+        return;
+    }
+}
+
 
         function showStageTransition(newStage) {
             const storyContent = document.getElementById('storyContent');
