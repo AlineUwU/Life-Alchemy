@@ -1108,6 +1108,7 @@
         function handleNegativeChoice(eventId, choiceId) {
             const negativeResponses = {
                 'niño': {
+                    // Infancia
                     'crying': {
                         'hide_emotions': {
                             text: 'Decides que no mostrarás más tus emociones. Aunque esto te protege de las burlas, sientes que pierdes una parte importante de ti.',
@@ -1141,9 +1142,150 @@
                             stats: { mental: 8, social: -2 },
                             element: 'Pensamiento Crítico'
                         }
+                    },
+                    // Adolescencia
+                    'peer_pressure': {
+                        'give_in': {
+                            text: 'Cedes a la presión y empiezas a beber y fumar. Te sientes más aceptado, pero también más perdido.',
+                            stats: { social: 8, physical: -10, mental: -5 },
+                            element: 'Adicción Temprana'
+                        },
+                        'resist': {
+                            text: 'Te mantienes firme en tus valores a pesar de las burlas. Pierdes algunos amigos pero te respetas a ti mismo.',
+                            stats: { mental: 10, social: -5, physical: 5 },
+                            element: 'Integridad'
+                        },
+                        'find_new_friends': {
+                            text: 'Buscas amigos que compartan tus valores. Descubres que hay otros jóvenes que también resisten la presión.',
+                            stats: { social: 6, mental: 8 },
+                            element: 'Círculo Sano'
+                        }
+                    },
+                    'toxic_masculinity': {
+                        'overcompensate': {
+                            text: 'Intentas compensar siendo más agresivo y dominante. Aunque otros te respetan por miedo, te sientes vacío por dentro.',
+                            stats: { social: 5, physical: 3, mental: -8 },
+                            element: 'Máscara Masculina'
+                        },
+                        'ignore_taunts': {
+                            text: 'Ignoras las burlas y te mantienes fiel a ti mismo. Algunos se dan cuenta de que la verdadera fuerza está en la autenticidad.',
+                            stats: { mental: 12, social: -3 },
+                            element: 'Masculinidad Auténtica'
+                        },
+                        'redefine_masculinity': {
+                            text: 'Cuestionas activamente qué significa "ser hombre". Comienzas a formar tu propia definición de masculinidad.',
+                            stats: { mental: 15, social: 2 },
+                            element: 'Masculinidad Redefinida'
+                        }
+                    },
+                    // Juventud
+                    'career_pressure': {
+                        'follow_expectations': {
+                            text: 'Sigues el camino que tu familia espera. Tienes éxito financiero pero sientes que vives la vida de otro.',
+                            stats: { social: 5, mental: -10, physical: -3 },
+                            element: 'Vida Prestada'
+                        },
+                        'follow_passion': {
+                            text: 'Sigues tu corazón y estudias arte. Enfrentas dificultades económicas pero te sientes auténtico y realizado.',
+                            stats: { mental: 15, social: -5, physical: 3 },
+                            element: 'Pasión Auténtica'
+                        },
+                        'find_compromise': {
+                            text: 'Encuentras una carrera que combina estabilidad financiera con expresión creativa. Es un balance difícil pero posible.',
+                            stats: { mental: 8, social: 3, physical: 2 },
+                            element: 'Equilibrio Sabio'
+                        }
+                    },
+                    'emotional_walls': {
+                        'maintain_walls': {
+                            text: 'Mantienes tus barreras emocionales. Tu relación termina, y te quedas preguntándote qué pasó.',
+                            stats: { social: -10, mental: -5 },
+                            element: 'Soledad Emocional'
+                        },
+                        'learn_vulnerability': {
+                            text: 'Poco a poco aprendes a abrirte emocionalmente. Es difícil pero tu relación se fortalece enormemente.',
+                            stats: { social: 15, mental: 8 },
+                            element: 'Vulnerabilidad Valiente'
+                        },
+                        'seek_therapy': {
+                            text: 'Buscas ayuda profesional para aprender a expresar emociones. El proceso es transformador.',
+                            stats: { mental: 12, social: 10 },
+                            element: 'Sanación Terapéutica'
+                        }
+                    },
+                    // Adultez
+                    'midlife_crisis': {
+                        'drastic_changes': {
+                            text: 'Haces cambios radicales: dejas tu trabajo, compras un auto deportivo, terminas tu matrimonio. Es liberador pero destructivo.',
+                            stats: { physical: 5, mental: -8, social: -15 },
+                            element: 'Crisis Destructiva'
+                        },
+                        'gradual_reflection': {
+                            text: 'Reflexionas cuidadosamente sobre tu vida y haces cambios medidos. Buscas terapia y redefines tus prioridades.',
+                            stats: { mental: 15, social: 5, physical: 3 },
+                            element: 'Transformación Consciente'
+                        },
+                        'accept_status_quo': {
+                            text: 'Decides que es muy tarde para cambiar y te resignas. La sensación de vacío persiste pero aprendes a vivir con ella.',
+                            stats: { mental: -5, social: -8, physical: -5 },
+                            element: 'Resignación'
+                        }
+                    },
+                    'fatherhood_struggle': {
+                        'repeat_patterns': {
+                            text: 'Repites los mismos patrones de tu padre. Tus hijos experimentan la misma frialdad emocional que tú viviste.',
+                            stats: { social: -10, mental: -8 },
+                            element: 'Ciclo Repetido'
+                        },
+                        'break_cycle': {
+                            text: 'Conscientemente decides ser diferente. Aprendes a expresar amor y emociones a tus hijos de maneras que nunca experimentaste.',
+                            stats: { social: 15, mental: 12 },
+                            element: 'Ciclo Roto'
+                        },
+                        'seek_help': {
+                            text: 'Buscas clases de paternidad y terapia familiar. Inviertes en aprender a ser el padre que quieres ser.',
+                            stats: { social: 12, mental: 10 },
+                            element: 'Padre Consciente'
+                        }
+                    },
+                    // Madurez
+                    'retirement_identity': {
+                        'stay_busy': {
+                            text: 'Te mantienes ocupado con múltiples actividades para evitar enfrentar el vacío. La hiperactividad esconde la crisis de identidad.',
+                            stats: { physical: 5, mental: -5, social: 3 },
+                            element: 'Hiperactividad Defensiva'
+                        },
+                        'find_purpose': {
+                            text: 'Buscas un nuevo propósito de vida más allá del trabajo. Descubres pasiones y causas que dan significado a esta nueva etapa.',
+                            stats: { mental: 15, social: 10, physical: 5 },
+                            element: 'Propósito Renovado'
+                        },
+                        'embrace_rest': {
+                            text: 'Aprendes a disfrutar el descanso y la reflexión. Por primera vez en décadas, te permites simplemente "ser" sin "hacer".',
+                            stats: { mental: 12, physical: 8, social: 5 },
+                            element: 'Paz del Descanso'
+                        }
+                    },
+                    'health_decline': {
+                        'deny_help': {
+                            text: 'Rechazas ayuda y te aferras a una independencia que ya no es segura. Tu salud se deteriora más rápidamente.',
+                            stats: { physical: -10, mental: -8, social: -5 },
+                            element: 'Negación Peligrosa'
+                        },
+                        'accept_gracefully': {
+                            text: 'Aceptas ayuda con gracia y gratitud. Descubres que recibir cuidado también puede ser una forma de fortaleza.',
+                            stats: { social: 12, mental: 8, physical: 3 },
+                            element: 'Gracia en la Dependencia'
+                        },
+                        'plan_care': {
+                            text: 'Planificas proactivamente tu cuidado futuro. Tomas decisiones informadas sobre tu vida y mantienes el control posible.',
+                            stats: { mental: 10, social: 8, physical: 5 },
+                            element: 'Planificación Sabia'
+                        }
                     }
                 },
                 'niña': {
+                    // Infancia
                     'sports': {
                         'accept_limitation': {
                             text: 'Aceptas que no puedes jugar fútbol y te conformas con actividades "apropiadas para niñas". Sientes que una parte de ti se marchita.',
@@ -1177,9 +1319,150 @@
                             stats: { mental: 10, social: -2 },
                             element: 'Consciencia Social'
                         }
+                    },
+                    // Adolescencia
+                    'body_image': {
+                        'hide_body': {
+                            text: 'Usas ropa holgada para esconder tu cuerpo en desarrollo. Te sientes más segura pero también desconectada de ti misma.',
+                            stats: { social: -5, mental: -8, physical: -3 },
+                            element: 'Desconexión Corporal'
+                        },
+                        'embrace_changes': {
+                            text: 'Decides abrazar los cambios naturales de tu cuerpo. Es difícil pero desarrollas una relación saludable con tu físico.',
+                            stats: { mental: 12, physical: 8, social: 5 },
+                            element: 'Aceptación Corporal'
+                        },
+                        'seek_support': {
+                            text: 'Hablas con mujeres de confianza sobre los cambios. Su sabiduría y apoyo te ayudan a navegar esta etapa.',
+                            stats: { social: 10, mental: 8 },
+                            element: 'Red de Mujeres'
+                        }
+                    },
+                    'academic_pressure': {
+                        'accept_stereotype': {
+                            text: 'Internalizas el mensaje de que no eres buena en ciencias. Evitas materias STEM y limitas tus opciones futuras.',
+                            stats: { mental: -10, social: 3 },
+                            element: 'Limitación Autoimpuesta'
+                        },
+                        'prove_wrong': {
+                            text: 'Estudias matemáticas y ciencias más duro que nunca. Demuestras que el género no determina la capacidad académica.',
+                            stats: { mental: 15, social: -3, physical: -2 },
+                            element: 'Determinación Académica'
+                        },
+                        'report_bias': {
+                            text: 'Reportas el comentario discriminatorio. Aunque enfrentas resistencia, plantas semillas de cambio en el sistema.',
+                            stats: { mental: 8, social: 5 },
+                            element: 'Activismo Temprano'
+                        }
+                    },
+                    // Juventud
+                    'workplace_harassment': {
+                        'endure_silently': {
+                            text: 'Aguantas en silencio para mantener el trabajo. Tu salud mental se deteriora pero tu carrera aparentemente se "protege".',
+                            stats: { social: -5, mental: -12, physical: -3 },
+                            element: 'Silencio Tóxico'
+                        },
+                        'confront_directly': {
+                            text: 'Confrontas directamente el comportamiento. Es arriesgado pero estableces límites claros y te respetan más.',
+                            stats: { mental: 10, social: 5, physical: 3 },
+                            element: 'Confrontación Valiente'
+                        },
+                        'document_report': {
+                            text: 'Documentas todo meticulosamente y reportas a recursos humanos. El proceso es largo pero efectivo.',
+                            stats: { mental: 8, social: 8 },
+                            element: 'Justicia Sistemática'
+                        }
+                    },
+                    'relationship_control': {
+                        'accept_control': {
+                            text: 'Confundes control con amor y aceptas el comportamiento. Tu mundo se hace cada vez más pequeño.',
+                            stats: { social: -12, mental: -10, physical: -5 },
+                            element: 'Amor Tóxico'
+                        },
+                        'set_boundaries': {
+                            text: 'Estableces límites claros sobre lo que es aceptable. Es difícil pero necesario para una relación sana.',
+                            stats: { mental: 12, social: 5 },
+                            element: 'Límites Saludables'
+                        },
+                        'leave_relationship': {
+                            text: 'Reconoces las señales de abuso y terminas la relación. Es doloroso pero te salvas de una escalada peligrosa.',
+                            stats: { mental: 8, social: -5, physical: 5 },
+                            element: 'Escape Valiente'
+                        }
+                    },
+                    // Adultez
+                    'career_family_balance': {
+                        'sacrifice_career': {
+                            text: 'Sacrificas tu carrera para enfocarte en la familia. Es gratificante pero también sientes que perdiste parte de tu identidad.',
+                            stats: { social: 10, mental: -8, physical: 2 },
+                            element: 'Sacrificio Maternal'
+                        },
+                        'fight_equality': {
+                            text: 'Luchas por igualdad en las responsabilidades domésticas. Requiere muchas conversaciones difíciles pero logras un balance más justo.',
+                            stats: { mental: 10, social: 8, physical: 5 },
+                            element: 'Igualdad Doméstica'
+                        },
+                        'redefine_success': {
+                            text: 'Redefinir el éxito en tus propios términos, no en los de la sociedad. Encuentras una definición más holística y personal.',
+                            stats: { mental: 15, social: 5 },
+                            element: 'Éxito Redefinido'
+                        }
+                    },
+                    'aging_pressure': {
+                        'fight_aging': {
+                            text: 'Inviertes tiempo y dinero excesivo luchando contra el envejecimiento. Te mantienes "joven" pero a un costo alto.',
+                            stats: { social: 5, mental: -8, physical: 3 },
+                            element: 'Juventud Artificial'
+                        },
+                        'embrace_aging': {
+                            text: 'Abrazas el envejecimiento como parte natural de la vida. Tu confianza y sabiduría se vuelven tu nueva belleza.',
+                            stats: { mental: 12, social: 8, physical: 5 },
+                            element: 'Sabiduría Madura'
+                        },
+                        'focus_health': {
+                            text: 'Te enfocas en mantener tu salud más que en tu apariencia. Te sientes más fuerte y vital que muchas personas más jóvenes.',
+                            stats: { physical: 15, mental: 8, social: 3 },
+                            element: 'Vitalidad Saludable'
+                        }
+                    },
+                    // Madurez
+                    'empty_nest': {
+                        'live_through_children': {
+                            text: 'Vives a través de los logros de tus hijos. Te sientes conectada pero también perdida sin tu rol maternal activo.',
+                            stats: { social: 5, mental: -8 },
+                            element: 'Maternidad Vicaria'
+                        },
+                        'rediscover_self': {
+                            text: 'Redescubres quién eres fuera de los roles familiares. Es aterrador pero también liberador explorar tu identidad individual.',
+                            stats: { mental: 15, social: 5, physical: 8 },
+                            element: 'Renacimiento Personal'
+                        },
+                        'serve_others': {
+                            text: 'Canalizas tu naturaleza cuidadora ayudando a la comunidad. Encuentras propósito en ser "madre" de una causa mayor.',
+                            stats: { social: 15, mental: 8 },
+                            element: 'Maternidad Comunitaria'
+                        }
+                    },
+                    'financial_insecurity': {
+                        'depend_family': {
+                            text: 'Dependes de la familia para apoyo financiero. Es humillante pero necesario debido a décadas de brechas salariales.',
+                            stats: { social: -5, mental: -10 },
+                            element: 'Dependencia Forzada'
+                        },
+                        'work_longer': {
+                            text: 'Continúas trabajando más allá de la edad de jubilación. Es agotador pero mantienes tu independencia financiera.',
+                            stats: { physical: -5, mental: 5, social: 3 },
+                            element: 'Trabajadora Eterna'
+                        },
+                        'advocate_change': {
+                            text: 'Aboga activamente por mejores políticas para mujeres mayores. Tu voz se suma a un movimiento necesario.',
+                            stats: { mental: 12, social: 10 },
+                            element: 'Activista de Género'
+                        }
                     }
                 },
                 'queer': {
+                    // Infancia
                     'different': {
                         'conform': {
                             text: 'Intentas actuar como los demás esperan, pero sientes que traicionas tu verdadero yo. La máscara se vuelve pesada.',
@@ -1212,6 +1495,146 @@
                             text: 'Trabajas en amarte a ti misme sin depender de la validación externa. Tu fortaleza interior crece.',
                             stats: { mental: 12, social: -2 },
                             element: 'Autoamor'
+                        }
+                    },
+                    // Adolescencia
+                    'coming_out_pressure': {
+                        'suppress_feelings': {
+                            text: 'Suprimes y niegas tus sentimientos. La represión es dolorosa y afecta tu salud mental profundamente.',
+                            stats: { mental: -12, social: 3, physical: -5 },
+                            element: 'Represión Identitaria'
+                        },
+                        'explore_safely': {
+                            text: 'Exploras tu identidad en espacios seguros y con personas de confianza. Vas a tu ritmo sin presionarte.',
+                            stats: { mental: 10, social: 8 },
+                            element: 'Exploración Segura'
+                        },
+                        'seek_information': {
+                            text: 'Buscas información y recursos LGBTQ+. El conocimiento te da herramientas para entender y aceptar tu identidad.',
+                            stats: { mental: 12, social: 5 },
+                            element: 'Educación Identitaria'
+                        }
+                    },
+                    'religious_conflict': {
+                        'deny_self': {
+                            text: 'Intentas "rezar para cambiar" tus sentimientos. El conflicto interno entre fe e identidad es devastador.',
+                            stats: { mental: -15, social: 5, physical: -5 },
+                            element: 'Conflicto Espiritual'
+                        },
+                        'slow_revelation': {
+                            text: 'Tomas tiempo para preparar una conversación honesta con tu familia. La paciencia y preparación dan mejores resultados.',
+                            stats: { mental: 8, social: 10 },
+                            element: 'Revelación Gradual'
+                        },
+                        'find_allies': {
+                            text: 'Buscas aliados en tu comunidad religiosa. Descubres que hay personas de fe que abrazan la diversidad.',
+                            stats: { mental: 10, social: 12 },
+                            element: 'Fe Inclusiva'
+                        }
+                    },
+                    // Juventud
+                    'workplace_closet': {
+                        'stay_closeted': {
+                            text: 'Mantienes tu identidad privada en el trabajo. Es agotador vivir una doble vida pero sientes que es más seguro.',
+                            stats: { social: 3, mental: -8, physical: -3 },
+                            element: 'Doble Vida'
+                        },
+                        'gradual_openness': {
+                            text: 'Gradualmente te abres con personas de confianza en el trabajo. Construyes aliados antes de ser completamente abierto.',
+                            stats: { mental: 8, social: 10 },
+                            element: 'Apertura Estratégica'
+                        },
+                        'be_advocate': {
+                            text: 'Te conviertes en un defensor visible de la diversidad. Es valiente y ayuda a cambiar la cultura laboral.',
+                            stats: { mental: 12, social: 5, physical: 3 },
+                            element: 'Activismo Laboral'
+                        }
+                    },
+                    'family_expectations': {
+                        'fake_relationship': {
+                            text: 'Finges relaciones heterosexuales para complacer a tu familia. La deceptionception es agotadora y dolorosa.',
+                            stats: { social: 5, mental: -12, physical: -3 },
+                            element: 'Teatralidad Forzada'
+                        },
+                        'educate_family': {
+                            text: 'Pacientemente educas a tu familia sobre diversidad sexual y de género. Es un proceso largo pero algunos se abren.',
+                            stats: { mental: 8, social: 8 },
+                            element: 'Educación Familiar'
+                        },
+                        'limit_contact': {
+                            text: 'Limitas el contacto con la familia hasta que puedan aceptarte. Es doloroso pero necesario para tu bienestar.',
+                            stats: { mental: 10, social: -8, physical: 5 },
+                            element: 'Límites Protectivos'
+                        }
+                    },
+                    // Adultez
+                    'legal_discrimination': {
+                        'avoid_conflict': {
+                            text: 'Evitas situaciones que puedan causar discriminación. Tu mundo se hace más pequeño pero te sientes más seguro.',
+                            stats: { social: -5, mental: -5, physical: 3 },
+                            element: 'Mundo Limitado'
+                        },
+                        'fight_legally': {
+                            text: 'Luchas legalmente contra cada instancia de discriminación. Es agotador pero ayudas a crear precedentes importantes.',
+                            stats: { mental: 8, social: 5, physical: -3 },
+                            element: 'Guerrero Legal'
+                        },
+                        'build_community': {
+                            text: 'Construyes redes comunitarias de apoyo mutuo. La solidaridad se convierte en tu fuerza.',
+                            stats: { social: 15, mental: 8 },
+                            element: 'Red Comunitaria'
+                        }
+                    },
+                    'parenting_challenges': {
+                        'overprotect': {
+                            text: 'Sobreproteges a tu hijo de comentarios negativos. Le das seguridad pero quizás no las herramientas para enfrentar el mundo.',
+                            stats: { social: 5, mental: -5 },
+                            element: 'Protección Excesiva'
+                        },
+                        'educate_community': {
+                            text: 'Educas activamente a la comunidad escolar sobre familias diversas. Tu activismo beneficia a muchas familias.',
+                            stats: { mental: 10, social: 12 },
+                            element: 'Activismo Parental'
+                        },
+                        'empower_child': {
+                            text: 'Empoderas a tu hijo para que defienda su familia con orgullo. Le das herramientas y confianza para navegar el mundo.',
+                            stats: { social: 10, mental: 12 },
+                            element: 'Empoderamiento Filial'
+                        }
+                    },
+                    // Madurez
+                    'aging_isolation': {
+                        'accept_isolation': {
+                            text: 'Aceptas la soledad como inevitable. Es una resignación triste que afecta tu salud mental y física.',
+                            stats: { social: -12, mental: -10, physical: -5 },
+                            element: 'Soledad Resignada'
+                        },
+                        'create_chosen_family': {
+                            text: 'Creas una familia elegida intergeneracional. Los lazos que eliges pueden ser tan fuertes como los de sangre.',
+                            stats: { social: 15, mental: 12, physical: 5 },
+                            element: 'Familia Elegida'
+                        },
+                        'mentor_youth': {
+                            text: 'Mentoreas a jóvenes LGBTQ+ para crear un legado de apoyo. Tu experiencia se convierte en sabiduría para la siguiente generación.',
+                            stats: { social: 12, mental: 15 },
+                            element: 'Legado Queer'
+                        }
+                    },
+                    'healthcare_discrimination': {
+                        'go_back_closet': {
+                            text: 'Vuelves al closet para evitar discriminación en el cuidado médico. Es una regresión dolorosa pero pragmática.',
+                            stats: { social: -8, mental: -12, physical: 3 },
+                            element: 'Retroceso Protectivo'
+                        },
+                        'fight_recognition': {
+                            text: 'Luchas por reconocimiento y derechos hasta el final. Tu activismo persiste incluso en la vulnerabilidad.',
+                            stats: { mental: 10, social: 8, physical: -3 },
+                            element: 'Activismo Persistente'
+                        },
+                        'find_affirming_care': {
+                            text: 'Buscas y encuentras centros de cuidado LGBTQ+ amigables. La búsqueda vale la pena por el cuidado digno.',
+                            stats: { social: 10, mental: 12, physical: 8 },
+                            element: 'Cuidado Afirmativo'
                         }
                     }
                 }
